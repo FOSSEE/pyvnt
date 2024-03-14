@@ -1,0 +1,30 @@
+❯ python readFile_test.py
+fvSolutions
+├── solvers
+│   ├── p
+│   │   { 
+│   │      preconditioner : DIC, 
+│   │      solver : PCG, 
+│   │      tolerance : 1e-06, 
+│   │      relTol : 0.05, 
+│   │   }
+│   ├── pFinal
+│   │   { 
+│   │      relTol : 0, 
+│   │   }
+│   └── U
+│       { 
+│          solver : smoothSolver, 
+│          smoother : symGaussSeidel, 
+│          tolerance : 1e-05, 
+│          relTol : 0, 
+│       }
+└── PISO
+    { 
+       nCorrectors : 2, 
+       nNonOrthogonalCorrectors : 0, 
+       pRefCell : 0, 
+       pRefValue : 0, 
+    }
+
+
