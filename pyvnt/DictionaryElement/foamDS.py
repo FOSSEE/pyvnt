@@ -1,4 +1,5 @@
 from anytree import Node, RenderTree, AsciiStyle, NodeMixin
+from anytree.search import find_by_attr
 from typing import Any, Type
 from pyvnt.DictionaryElement.keyData import KeyData
 from pyvnt.Reference.errorClasses import *
@@ -109,7 +110,7 @@ class Foam(NodeMixin):
         '''
 
         if pos != None:
-            self.data.insert(data, pos)
+            self.data.insert(pos, data)
         else:
             self.data.append(data)
     
@@ -119,7 +120,7 @@ class Foam(NodeMixin):
         '''
 
         try: 
-            self.data.pop(data)
+            self.data.remove(data)
         except:
             raise AttributeError(f"{data.name} does not exist in this node")
     
@@ -129,7 +130,7 @@ class Foam(NodeMixin):
         '''
 
         try:
-            self.data.pop(data)
+            self.data.remove(data)
             self.data.insert(data, pos)
         except:
             raise AttributeError(f"{data.name} does not exist in this node")
