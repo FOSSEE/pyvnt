@@ -215,7 +215,7 @@ class EnumProp(ValueProperty):
         Parameters:
             val: The option that is to be removed
         '''
-        if val != self.default:
+        if val != self.__default:
             self.__items.remove(val)
         else:
             raise IsDefaultError(val)
@@ -227,7 +227,7 @@ class EnumProp(ValueProperty):
         Parameters: 
             val: The new value of the property
         '''
-        if val in self.items:
+        if val in self.__items:
             self.__default = val
         else:
             raise ValueOutofRangeError(val)

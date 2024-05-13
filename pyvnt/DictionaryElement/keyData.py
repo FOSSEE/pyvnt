@@ -109,7 +109,7 @@ class KeyData(KeyParent):
                 self.__dict__[newKey] = new
     """
 
-    def replaceVal(self, old: ValueProperty | str, new: ValueProperty): # uses orderedDict instead of regular Dictionary
+    def replaceVal(self, old: ValueProperty or str, new: ValueProperty): # uses orderedDict instead of regular Dictionary
         '''
         Function to insert and edit values in the class object once it is created
 
@@ -129,9 +129,10 @@ class KeyData(KeyParent):
         newKey = new._ValueProperty__name
 
         if oldKey == newKey:
-            self.__dict__[newKey] = new
+            # self.__dict__[newKey] = new
+            self._privateDict[newKey] = new
         else:
-            if newKey != oldKey and newKey in self.__dict__.keys():
+            if newKey != oldKey and newKey in self._privateDict.keys():
                 raise KeyRepeatError(newKey)
             else:
                 self._privateDict = OrderedDict([(newKey, new) if k == oldKey else (k, v) for k, v in self._privateDict.items()])

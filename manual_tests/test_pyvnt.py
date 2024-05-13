@@ -1,10 +1,10 @@
 from pyvnt import *
 from anytree import RenderTree, AsciiStyle
 
-'''
+
 prop1 = EnumProp('val1', items={'PCG', 'PBiCG', 'PBiCGStab'}, default='PCG')
 prop2 = EnumProp('val2', items={'PCG', 'PBiCG', 'PBiCGStab'}, default='PBiCG')
-'''
+
 
 # set up automated tests for CI/CD in github
 
@@ -29,9 +29,9 @@ print(RenderTree(child1).by_attr())
 '''
 
 # Test for Keydata class singularily
-'''
+
 key1 = KeyData('solver', prop1)
 print(key1)
 
-'''
+
 
