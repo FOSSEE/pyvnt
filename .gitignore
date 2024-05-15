@@ -2,3 +2,4 @@ env
 build/
 dist/
 pyvnt.egg-info
+manual_tests

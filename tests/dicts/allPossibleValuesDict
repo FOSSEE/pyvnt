@@ -1,0 +1,8 @@
+
+
+key1            word1 word2 "string1";
+key2            12 -35;
+key3            1.23 1e-05 1e-25 1e+25;
+key4            ( 4, 2, 5 );
+key5            [ 0, 1, 0, 0, 0, 0, 0 ];
+key6            ;

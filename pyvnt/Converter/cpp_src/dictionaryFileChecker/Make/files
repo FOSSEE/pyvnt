@@ -1,0 +1,4 @@
+
+dictionaryFileChecker.C
+
+EXE = ./bin/dictionaryFileChecker
