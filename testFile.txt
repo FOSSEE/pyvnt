@@ -1,0 +1,14 @@
+test_head
+{
+		test_child
+{
+		test_child2
+{
+	solver	PCG PBiCG ;
+	}
+	test_child3
+{
+	solver	PCG PBiCG ;
+	}
+}
+}

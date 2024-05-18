@@ -71,7 +71,7 @@ class KeyData(KeyParent):
     def appendVal(self, key: "str", val: ValueProperty):
         self._privateDict[key] = val
 
-    """
+    '''
     # TODO: Take input of the object to be replaced or the obejct name instead of the variable name as the string. -- done in replaceVal2
     This piece of code is here to remind devs about what not to do
 
@@ -107,7 +107,7 @@ class KeyData(KeyParent):
                 for k, v in list(self.__dict__.items()):
                     self.__dict__[replacement.get(k, k)] = self.__dict__.pop(k)
                 self.__dict__[newKey] = new
-    """
+    '''
 
     def replaceVal(self, old: ValueProperty or str, new: ValueProperty): # uses orderedDict instead of regular Dictionary
         '''
@@ -166,3 +166,14 @@ class KeyData(KeyParent):
                 res = res + f"{val.giveVal()}, "
         
         return res
+    
+    def writeOut(self, file):
+        '''
+        Function to write the object to a file
+        '''
+        file.write(f"{self.name}\t")
+        for key, val in self._privateDict.items():
+            val.writeOut(file)
+            file.write(" ")
+        # file.seek(-1, 1)
+        file.write(";\n")

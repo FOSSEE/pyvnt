@@ -24,14 +24,16 @@ child3 = Foam('test_child3', child1, None, key1)
 # Display tests
 
 # print(head)
-showTree(head)
+# showTree(head)
 # print(RenderTree(child1).by_attr())
 
 
 # Test for Keydata class singularily
 
-key1 = KeyData('solver', prop1)
+# key1 = KeyData('solver', prop1)
 # print(key1)
+
+writeTo(head, 'testFile.txt')
 
 
 

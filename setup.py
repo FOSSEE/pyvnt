@@ -12,12 +12,13 @@ setup(
     author="",
     author_email="<abs@gmail.com>",
     description=DESCRIPTION,
-    packages_dir={"": "pyvnt"},
-    data_files=[('Shared_Objects', [
-        './pyvnt/Converter/cpp_src/dictionaryFile/lib/dictionaryFile.so', 
-        './pyvnt/Converter/cpp_src/dictionaryFileIterator/lib/dictionaryFileIterator.so'
-    ])],
-    packages=[''],
+    # packages_dir={"": "pyvnt"},
+    # data_files=[('Shared_Objects', [
+    #     './pyvnt/Converter/cpp_src/dictionaryFile/lib/dictionaryFile.so', 
+    #     './pyvnt/Converter/cpp_src/dictionaryFileIterator/lib/dictionaryFileIterator.so'
+    # ])],
+    packages=find_packages(include=['pyvnt', 'pyvnt.*']),
+    # py_modules=['pyvnt'],
     # include_package_data=True,
     # package_data={'': ['./pyvnt/Converter/cpp_src/dictionaryFile/lib/dictionaryFile.so', './pyvnt/Converter/cpp_src/dictionaryFileIterator/lib/dictionaryFileIterator.so']},
     install_requires=['anytree', 'dataclasses'],

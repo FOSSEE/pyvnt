@@ -134,5 +134,34 @@ class Foam(NodeMixin):
             self.data.insert(data, pos)
         except:
             raise AttributeError(f"{data.name} does not exist in this node")
+    
+    def writeOut(self, file):
+        '''
+        Function to write the current node to the file
+        '''
+
+        '''
+        if self.parent == None:
+            # TODO: Add the header to the file
+            pass
+        else:
+            file.write(f"{self.name}\n")
+            file.write("{\n")
+            for d in self.data:
+                file.write("\t")
+                d.writeOut(file)
+            file.write("}\n")
+        '''
+        file.write(f"{self.name}\n")
+        file.write("{\n")
+        for d in self.data:
+            file.write("\t")
+            d.writeOut(file)
+        file.write("\t")
+        for child in self.children:
+            file.write("\t")
+            child.writeOut(file)
+
+        file.write("}\n")
 
 

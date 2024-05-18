@@ -1,4 +1,0 @@
-
-LIB_LIBS = \
-  -L$FOAM_LIBBIN \
-  -lOpenFOAM
