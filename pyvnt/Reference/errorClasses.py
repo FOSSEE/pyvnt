@@ -63,3 +63,10 @@ class InvalidRangeError(Exception):
 
     def __str__(self):
         return f"Given range is invalid"
+
+class InvalidTupleError(TypeError):
+    def __init__(self, item):
+        self.item = item
+
+    def __str__(self):
+        return f"{self.item} not an tuple type"
