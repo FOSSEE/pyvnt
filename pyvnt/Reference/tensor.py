@@ -1,6 +1,7 @@
 from pyvnt.Reference.basic import *
 from pyvnt.Reference.errorClasses import InvalidTupleError
 from pyvnt.Reference.vector import PropertyVector
+import numpy as np
 
 class PropertyTensor(ValueProperty):
     '''
@@ -78,59 +79,59 @@ class PropertyTensor(ValueProperty):
                 else:
                     raise InvalidTupleError(t)
     
-    def xx(self) -> float:
+    def xx(self) -> PropertyFloat:
         '''
         Returns the xx value of the tensor
         '''
-        return self.__values[0][0].giveVal()
+        return self.__values[0][0]
     
-    def xy(self) -> float:
+    def xy(self) -> PropertyFloat:
         '''
         Returns the xy value of the tensor
         '''
-        return self.__values[0][1].giveVal()
+        return self.__values[0][1]
     
-    def xz(self) -> float:
+    def xz(self) -> PropertyFloat:
         '''
         Returns the xz value of the tensor
         '''
-        return self.__values[0][2].giveVal()
+        return self.__values[0][2]
     
-    def yx(self) -> float:
+    def yx(self) -> PropertyFloat:
         '''
         Returns the yx value of the tensor
         '''
-        return self.__values[1][0].giveVal()
+        return self.__values[1][0]
     
-    def yy(self) -> float:
+    def yy(self) -> PropertyFloat:
         '''
         Returns the yy value of the tensor
         '''
-        return self.__values[1][1].giveVal()
+        return self.__values[1][1]
     
-    def yz(self) -> float:
+    def yz(self) -> PropertyFloat:
         '''
         Returns the yz value of the tensor
         '''
-        return self.__values[1][2].giveVal()
+        return self.__values[1][2]
     
-    def zx(self) -> float:
+    def zx(self) -> PropertyFloat:
         '''
         Returns the zx value of the tensor
         '''
-        return self.__values[2][0].giveVal()
+        return self.__values[2][0]
     
-    def zy(self) -> float:
+    def zy(self) -> PropertyFloat:
         '''
         Returns the zy value of the tensor
         '''
-        return self.__values[2][1].giveVal()
+        return self.__values[2][1]
     
-    def zz(self) -> float:
+    def zz(self) -> PropertyFloat:
         '''
         Returns the zz value of the tensor
         '''
-        return self.__values[2][2].giveVal()
+        return self.__values[2][2]
     
     def row(self, r: int) -> PropertyVector:
         '''
@@ -168,19 +169,39 @@ class PropertyTensor(ValueProperty):
         '''
         Returns the inverse of the tensor
         '''
-        pass
+        ar = np.array([[self.xx().giveVal(), self.xy().giveVal(), self.xz().giveVal()],
+                       [self.yx().giveVal(), self.yy().giveVal(), self.yz().giveVal()],
+                       [self.zx().giveVal(), self.zy().giveVal(), self.zz().giveVal()]])
 
-    def inner(self, t) -> PropertyTensor:
+        res = np.linalg.inv(ar)
+
+        return PropertyTensor(self._ValueProperty__name + "_inv", [res[0][0], res[0][1], res[0][2],
+                                                                   res[1][0], res[1][1], res[1][2],
+                                                                   res[2][0], res[2][1], res[2][2]])
+
+    def inner(self, t: PropertyTensor) -> PropertyTensor:
         '''
         Returns the inner product of the tensor with another tensor
         '''
-        pass
+        return PropertyTensor(self._ValueProperty__name + "_inner", [self.xx()*t.xx() + self.xy()*t.yx() + self.xz()*t.zx(),
+                                                                     self.xx()*t.xy() + self.xy()*t.yy() + self.xz()*t.zy(),
+                                                                     self.xx()*t.xz() + self.xy()*t.yz() + self.xz()*t.zz(),
 
-    def schur(self, t) -> PropertyTensor:
+                                                                     self.yx()*t.xx() + self.yy()*t.yx() + self.yz()*t.zx(),
+                                                                     self.yx()*t.xy() + self.yy()*t.yy() + self.yz()*t.zy(),
+                                                                     self.yx()*t.xz() + self.yy()*t.yz() + self.yz()*t.zz(),
+
+                                                                     self.zx()*t.xx() + self.zy()*t.yx() + self.zz()*t.zx(),
+                                                                     self.zx()*t.xy() + self.zy()*t.yy() + self.zz()*t.zy(),
+                                                                     self.zx()*t.xz() + self.zy()*t.yz() + self.zz()*t.zz()])
+
+    def schur(self, t: PropertyTensor) -> PropertyTensor:
         '''
         Returns the Schur product of the tensor with another tensor
         '''
-        pass
+        return PropertyTensor(self._ValueProperty__name + "_schur", [self.xx()*t.xx(), self.xy()*t.xy(), self.xz()*t.xz(),
+                                                                     self.yx()*t.yx(), self.yy()*t.yy(), self.yz()*t.yz(),
+                                                                     self.zx()*t.zx(), self.zy()*t.zy(), self.zz()*t.zz()])
     
     def __repr__(self):
         return f"PropertyTensor(name = {self._ValueProperty__name}, xx = {self.xx()}, xy = {self.xy()}, xz = {self.xz()}, yx = {self.yx()}, yy = {self.yy()}, yz = {self.yz()}, zx = {self.zx()}, zy = {self.zy()}, zz = {self.zz()})"
