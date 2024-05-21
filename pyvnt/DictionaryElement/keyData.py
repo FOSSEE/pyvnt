@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from collections import OrderedDict
 from anytree import NodeMixin
 from pyvnt.Reference.basic import *
+from pyvnt.utils.makeIndent import makeIndent
 
 
 '''
@@ -158,22 +159,30 @@ class KeyData(KeyParent):
         '''
         Function to get all the keys and values stored in the object in a text format
         '''
+        last_elem = list(self._privateDict.keys())[-1]
+
         res = f"{self.name} : "
         for key, val in self._privateDict.items():
             if key == 'name':
                 continue
             else:
-                res = res + f"{val.giveVal()}, "
+                res = res + f"{val.giveVal()}"
+                if key != last_elem:
+                    res = res + ", "
         
         return res
     
-    def writeOut(self, file):
+    def writeOut(self, file, indent = 0):
         '''
         Function to write the object to a file
         '''
-        file.write(f"{self.name}\t")
+        col_width = 16
+        last_elem = list(self._privateDict.keys())[-1]
+
+        makeIndent(file, indent)
+        file.write(f"{self.name.ljust(col_width)}")
         for key, val in self._privateDict.items():
             val.writeOut(file)
-            file.write(" ")
-        # file.seek(-1, 1)
+            if key != last_elem:
+                file.write(" ")
         file.write(";\n")

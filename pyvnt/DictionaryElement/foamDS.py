@@ -3,6 +3,7 @@ from anytree.search import find_by_attr
 from typing import Any, Type
 from pyvnt.DictionaryElement.keyData import KeyData
 from pyvnt.Reference.errorClasses import *
+from pyvnt.utils.makeIndent import makeIndent
 
 '''
 Criteria for classes:
@@ -135,7 +136,7 @@ class Foam(NodeMixin):
         except:
             raise AttributeError(f"{data.name} does not exist in this node")
     
-    def writeOut(self, file):
+    def writeOut(self, file, indent = 0):
         '''
         Function to write the current node to the file
         '''
@@ -152,16 +153,23 @@ class Foam(NodeMixin):
                 d.writeOut(file)
             file.write("}\n")
         '''
-        file.write(f"{self.name}\n")
-        file.write("{\n")
-        for d in self.data:
-            file.write("\t")
-            d.writeOut(file)
-        file.write("\t")
-        for child in self.children:
-            file.write("\t")
-            child.writeOut(file)
 
+        makeIndent(file, indent)
+        file.write(f"{self.name}\n")
+
+        makeIndent(file, indent)
+        file.write("{\n")
+
+        for d in self.data:
+            d.writeOut(file, indent+1)
+
+        # makeIndent(file, indent)
+
+        for child in self.children:
+            child.writeOut(file, indent+1)
+            file.write("\n")
+
+        makeIndent(file, indent)
         file.write("}\n")
 
 

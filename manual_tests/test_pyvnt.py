@@ -24,7 +24,7 @@ child3 = Foam('test_child3', child1, None, key1)
 # Display tests
 
 # print(head)
-# showTree(head)
+showTree(head)
 # print(RenderTree(child1).by_attr())
 
 
