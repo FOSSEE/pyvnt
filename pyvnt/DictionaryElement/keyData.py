@@ -148,9 +148,12 @@ class KeyData(KeyParent):
         del self._privateDict[key]
 
     def __repr__(self):
+        last_elem = list(self._privateDict.keys())[-1]
         res_str = f"KeyData("
         for key, val in self._privateDict.items():
-            res_str = res_str + f"{key} : {val}, "
+            res_str = res_str + f"{key} : {val}"
+            if key != last_elem:
+                res_str = res_str + ", "
         res_str = res_str + ")"
 
         return res_str
