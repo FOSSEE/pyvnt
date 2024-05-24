@@ -241,7 +241,7 @@ class EnumProp(ValueProperty):
 
     '''
 
-    __slots__ = ('_EnumProp__items', '_EnumProp__default')
+    __slots__ = ('_ValueProperty__name', '_EnumProp__items', '_EnumProp__default')
 
     def __init__(self, name: str, items: {str}, default: str):
         super(EnumProp, self).__init__()
