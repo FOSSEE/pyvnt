@@ -73,6 +73,12 @@ class PropertyInt(ValueProperty):
         
     def __repr__(self):
         return f"PropertyInt(name = {self._ValueProperty__name}, default = {self.__default}, minimum = {self.__minimum}, maximum = {self.__maximum})"
+    
+    def writeOut(self, file):
+        '''
+        Function to write the object to a file
+        '''
+        file.write(f"{self.__default}")
 
 
 class PropertyFloat(ValueProperty):
@@ -127,6 +133,12 @@ class PropertyFloat(ValueProperty):
 
     def __repr__(self):
         return f"PropertyFloat(name = {self._ValueProperty__name}, default = {self.__default}, minimum = {self.__minimum}, maximum = {self.__maximum})"
+    
+    def writeOut(self, file):
+        '''
+        Function to write the object to a file
+        '''
+        file.write(f"{self.__default}")
 
 
 class PropertyString(ValueProperty): # for testing purposes only, to be scrapped
@@ -267,3 +279,9 @@ class EnumProp(ValueProperty):
         '''
         res = self.__default
         return res
+    
+    def writeOut(self, file):
+        '''
+        Function to write the object to a file
+        '''
+        file.write(f"{self.__default}")
