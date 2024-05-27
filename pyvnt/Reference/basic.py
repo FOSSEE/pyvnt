@@ -74,11 +74,42 @@ class PropertyInt(ValueProperty):
     def __repr__(self):
         return f"PropertyInt(name = {self._ValueProperty__name}, default = {self.__default}, minimum = {self.__minimum}, maximum = {self.__maximum})"
     
+    def __add__(self, other):
+        return self.__default + other._PropertyFloat__default
+    
+    def __sub__(self, other):
+        return self.__default - other._PropertyFloat__default
+    
+    def __mul__(self, other):
+        return self.__default * other._PropertyFloat__default
+
+    def __truediv__(self, other):
+        return self.__default / other._PropertyFloat__default
+    
+    def __gt__(self, other):
+        return self.__default > other._PropertyFloat__default
+    
+    def __lt__(self, other):
+        return self.__default < other._PropertyFloat__default
+    
+    def __le__(self, other):
+        return self.__default <= other._PropertyFloat__default
+    
+    def __ge__(self, other):
+        return self.__default >= other._PropertyFloat__default
+    
+    def __eq__(self, other):
+        return self.__default == other._PropertyFloat__default
+    
+    def __ne__(self, other):
+        return self.__default != other._PropertyFloat__default
+
     def writeOut(self, file):
         '''
         Function to write the object to a file
         '''
         file.write(f"{self.__default}")
+
 
 
 class PropertyFloat(ValueProperty):
@@ -134,11 +165,42 @@ class PropertyFloat(ValueProperty):
     def __repr__(self):
         return f"PropertyFloat(name = {self._ValueProperty__name}, default = {self.__default}, minimum = {self.__minimum}, maximum = {self.__maximum})"
     
+    def __add__(self, other):
+        return self.__default + other._PropertyFloat__default
+    
+    def __sub__(self, other):
+        return self.__default - other._PropertyFloat__default
+    
+    def __mul__(self, other):
+        return self.__default * other._PropertyFloat__default
+
+    def __truediv__(self, other):
+        return self.__default / other._PropertyFloat__default
+    
+    def __gt__(self, other):
+        return self.__default > other._PropertyFloat__default
+    
+    def __lt__(self, other):
+        return self.__default < other._PropertyFloat__default
+    
+    def __le__(self, other):
+        return self.__default <= other._PropertyFloat__default
+    
+    def __ge__(self, other):
+        return self.__default >= other._PropertyFloat__default
+    
+    def __eq__(self, other):
+        return self.__default == other._PropertyFloat__default
+    
+    def __ne__(self, other):
+        return self.__default != other._PropertyFloat__default
+      
     def writeOut(self, file):
         '''
         Function to write the object to a file
         '''
         file.write(f"{self.__default}")
+
 
 
 class PropertyString(ValueProperty): # for testing purposes only, to be scrapped
@@ -193,7 +255,7 @@ class EnumProp(ValueProperty):
 
     '''
 
-    __slots__ = ('_EnumProp__items', '_EnumProp__default')
+    __slots__ = ('_ValueProperty__name', '_EnumProp__items', '_EnumProp__default')
 
     def __init__(self, name: str, items: {str}, default: str):
         super(EnumProp, self).__init__()

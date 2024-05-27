@@ -63,3 +63,40 @@ class InvalidRangeError(Exception):
 
     def __str__(self):
         return f"Given range is invalid"
+
+class InvalidTupleError(TypeError):
+    def __init__(self, item):
+        self.item = item
+
+    def __str__(self):
+        return f"{self.item} not an tuple type"
+    
+class SizeError(Exception):
+    def __init__(self, size: int):
+        self.size = size
+
+    def __str__(self):
+        return f"Size of values should be {self.size}"
+
+class NoPlaceholdersError(Exception):
+    def __init__(self, msg: str):
+        self.msg = msg
+
+    def __str__(self):
+        return f"{self.msg}"
+
+class NoValueError(Exception):
+    def __init__(self, msg: str):
+        self.msg = msg
+
+    def __str__(self):
+        return f"{self.msg}"
+
+class KeyRepeatError(Exception):
+    def __init__(self, key: str):
+        self.key = key
+
+    def __str__(self):
+        return f"{self.key} Already exists"
+
+
