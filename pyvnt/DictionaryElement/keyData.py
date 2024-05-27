@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from collections import OrderedDict
 from anytree import NodeMixin
 from pyvnt.Reference.basic import *
+from pyvnt.utils.makeIndent import makeIndent
 
 
 '''
@@ -71,7 +72,7 @@ class KeyData(KeyParent):
     def appendVal(self, key: "str", val: ValueProperty):
         self._privateDict[key] = val
 
-    """
+    '''
     # TODO: Take input of the object to be replaced or the obejct name instead of the variable name as the string. -- done in replaceVal2
     This piece of code is here to remind devs about what not to do
 
@@ -107,7 +108,7 @@ class KeyData(KeyParent):
                 for k, v in list(self.__dict__.items()):
                     self.__dict__[replacement.get(k, k)] = self.__dict__.pop(k)
                 self.__dict__[newKey] = new
-    """
+    '''
 
     def replaceVal(self, old: ValueProperty or str, new: ValueProperty): # uses orderedDict instead of regular Dictionary
         '''
@@ -147,9 +148,12 @@ class KeyData(KeyParent):
         del self._privateDict[key]
 
     def __repr__(self):
+        last_elem = list(self._privateDict.keys())[-1]
         res_str = f"KeyData("
         for key, val in self._privateDict.items():
-            res_str = res_str + f"{key} : {val}, "
+            res_str = res_str + f"{key} : {val}"
+            if key != last_elem:
+                res_str = res_str + ", "
         res_str = res_str + ")"
 
         return res_str
@@ -158,11 +162,30 @@ class KeyData(KeyParent):
         '''
         Function to get all the keys and values stored in the object in a text format
         '''
+        last_elem = list(self._privateDict.keys())[-1]
+
         res = f"{self.name} : "
         for key, val in self._privateDict.items():
             if key == 'name':
                 continue
             else:
-                res = res + f"{val.giveVal()}, "
+                res = res + f"{val.giveVal()}"
+                if key != last_elem:
+                    res = res + ", "
         
         return res
+    
+    def writeOut(self, file, indent = 0):
+        '''
+        Function to write the object to a file
+        '''
+        col_width = 16
+        last_elem = list(self._privateDict.keys())[-1]
+
+        makeIndent(file, indent)
+        file.write(f"{self.name.ljust(col_width)}")
+        for key, val in self._privateDict.items():
+            val.writeOut(file)
+            if key != last_elem:
+                file.write(" ")
+        file.write(";\n")

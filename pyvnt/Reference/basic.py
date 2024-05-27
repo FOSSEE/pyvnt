@@ -104,6 +104,13 @@ class PropertyInt(ValueProperty):
     def __ne__(self, other):
         return self.__default != other._PropertyFloat__default
 
+    def writeOut(self, file):
+        '''
+        Function to write the object to a file
+        '''
+        file.write(f"{self.__default}")
+
+
 
 class PropertyFloat(ValueProperty):
     '''
@@ -187,6 +194,13 @@ class PropertyFloat(ValueProperty):
     
     def __ne__(self, other):
         return self.__default != other._PropertyFloat__default
+      
+    def writeOut(self, file):
+        '''
+        Function to write the object to a file
+        '''
+        file.write(f"{self.__default}")
+
 
 
 class PropertyString(ValueProperty): # for testing purposes only, to be scrapped
@@ -327,3 +341,9 @@ class EnumProp(ValueProperty):
         '''
         res = self.__default
         return res
+    
+    def writeOut(self, file):
+        '''
+        Function to write the object to a file
+        '''
+        file.write(f"{self.__default}")
