@@ -11,7 +11,7 @@ prop2 = EnumProp('val2', items={'PCG', 'PBiCG', 'PBiCGStab'}, default='PBiCG')
 # test for KeyData and Foam classes
 
 key1 = KeyData('solver', prop1, prop2)
-print(key1.giveVal())
+# print(key1.giveVal())
 head = Foam("test_head",None, None)
 
 # head.appendDict(args)
@@ -33,7 +33,7 @@ showTree(head)
 # key1 = KeyData('solver', prop1)
 # print(key1)
 
-writeTo(head, 'testFile.txt')
+# writeTo(head, 'testFile.txt')
 
 
 

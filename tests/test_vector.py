@@ -50,3 +50,7 @@ class TestVector:
         assert self.vprop1.x() == 1/14**0.5
         assert self.vprop1.y() == 2/14**0.5
         assert self.vprop1.z() == 3/14**0.5
+    
+    def test_vector_giveVal(self):
+        assert self.vprop1.giveVal() == (1, 2, 3)
+        assert self.vprop2.giveVal() == (4, 5, 6)

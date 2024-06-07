@@ -84,5 +84,20 @@ class PropertyVector(ValueProperty):
             self.setProperties(self._ValueProperty__name, PropertyFloat(self._ValueProperty__name + "_x", self.__x.giveVal()/s), PropertyFloat(self._ValueProperty__name + "_y", self.__y.giveVal()/s), PropertyFloat(self._ValueProperty__name + "_z", self.__z.giveVal()/s))
         return self
     
+    def giveVal(self):
+        '''
+        Returns the vector value
+        '''
+
+        res = (self.__x.giveVal(), self.__y.giveVal(), self.__z.giveVal())
+
+        return res
+
+    def writeOut(self, file):
+        '''
+        Returns the vector value in a string format
+        '''
+        file.write( f"({self.__x.giveVal()} {self.__y.giveVal()} {self.__z.giveVal()})")
+
     def __repr__(self):
         return f"PropertyVector(name = {self._ValueProperty__name}, x = {self.__x.giveVal()}, y = {self.__y.giveVal()}, z = {self.__z.giveVal()})"
