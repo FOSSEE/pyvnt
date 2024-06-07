@@ -54,3 +54,7 @@ class TestTensor:
         assert str(self.tprop1.col(1)) == f"PropertyVector(name = val1_col, x = 1, y = 4, z = 7)"
         assert str(self.tprop1.col(2)) == f"PropertyVector(name = val1_col, x = 2, y = 5, z = 8)"
         assert str(self.tprop1.col(3)) == f"PropertyVector(name = val1_col, x = 3, y = 6, z = 9)"
+    
+    def test_giveVal(self):
+        assert self.tprop1.giveVal() == (1, 2, 3, 4, 5, 6, 7, 8, 9)
+        assert self.tprop2.giveVal() == (4, 5, 6, 7, 8, 9, 1, 2, 3)

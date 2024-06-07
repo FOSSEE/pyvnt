@@ -204,6 +204,24 @@ class PropertyTensor(ValueProperty):
                                                                      self.yx()*t.yx(), self.yy()*t.yy(), self.yz()*t.yz(),
                                                                      self.zx()*t.zx(), self.zy()*t.zy(), self.zz()*t.zz()])
     
+    def giveVal(self):
+        '''
+        Returns the tensor value
+        '''
+        res = (self.xx(), self.xy(), self.xz(),
+               self.yx(), self.yy(), self.yz(),
+               self.zx(), self.zy(), self.zz())
+        return res
+    
+    def writeOut(self, file):
+        '''
+        Writes the tensor value to a file
+
+        Parameters:
+        file: The file object to write the value to
+        '''
+        file.write(f"{self.giveVal()}")
+
     def __repr__(self):
         return f"PropertyTensor(name = {self._ValueProperty__name}, xx = {self.xx()}, xy = {self.xy()}, xz = {self.xz()}, yx = {self.yx()}, yy = {self.yy()}, yz = {self.yz()}, zx = {self.zx()}, zy = {self.zy()}, zz = {self.zz()})"
 
