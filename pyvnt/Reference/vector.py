@@ -1,4 +1,6 @@
 from pyvnt.Reference.basic import *
+from typing import Self
+import math
 
 class PropertyVector(ValueProperty):
     '''
@@ -11,7 +13,7 @@ class PropertyVector(ValueProperty):
         z: PropertyFloat object to store z value of the vector
     '''
 
-    __slots__ = ('_PropertyVector__name', '_PropertyVector__x', '_PropertyVector__y', '_PropertyVector__z')
+    __slots__ = ('_ValueProperty__name', '_PropertyVector__x', '_PropertyVector__y', '_PropertyVector__z')
 
     def instance_restricted(self):
         pass
@@ -68,7 +70,7 @@ class PropertyVector(ValueProperty):
         '''
         return math.sqrt(self.__x.giveVal()**2 + self.__y.giveVal()**2 + self.__z.giveVal()**2)
     
-    def normalise(self, tol: PropertyFloat) -> PropertyVector:
+    def normalise(self, tol: PropertyFloat) -> Self:
         '''
         Normalises the vector
 
@@ -77,10 +79,25 @@ class PropertyVector(ValueProperty):
         '''
         s = self.magnitude()
         if s < tol.giveVal():
-            self.setProperties(self.__name, PropertyFloat(self.__name + "_x", 0), PropertyFloat(self.__name + "_y", 0), PropertyFloat(self.__name + "_z", 0))
+            self.setProperties(self._ValueProperty__name, PropertyFloat(self._ValueProperty__name + "_x", 0), PropertyFloat(self._ValueProperty__name + "_y", 0), PropertyFloat(self._ValueProperty__name + "_z", 0))
         else:
-            self.setProperties(self.__name, PropertyFloat(self.__name + "_x", self.__x.giveVal()/s), PropertyFloat(self.__name + "_y", self.__y.giveVal()/s), PropertyFloat(self.__name + "_z", self.__z.giveVal()/s))
+            self.setProperties(self._ValueProperty__name, PropertyFloat(self._ValueProperty__name + "_x", self.__x.giveVal()/s), PropertyFloat(self._ValueProperty__name + "_y", self.__y.giveVal()/s), PropertyFloat(self._ValueProperty__name + "_z", self.__z.giveVal()/s))
         return self
     
+    def giveVal(self):
+        '''
+        Returns the vector value
+        '''
+
+        res = (self.__x.giveVal(), self.__y.giveVal(), self.__z.giveVal())
+
+        return res
+
+    def writeOut(self, file):
+        '''
+        Returns the vector value in a string format
+        '''
+        file.write( f"({self.__x.giveVal()} {self.__y.giveVal()} {self.__z.giveVal()})")
+
     def __repr__(self):
-        return f"PropertyVector(name = {self.__name}, x = {self.__x.giveVal()}, y = {self.__y.giveVal()}, z = {self.__z.giveVal()})"
+        return f"PropertyVector(name = {self._ValueProperty__name}, x = {self.__x.giveVal()}, y = {self.__y.giveVal()}, z = {self.__z.giveVal()})"
