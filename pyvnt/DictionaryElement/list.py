@@ -1,8 +1,10 @@
 from pyvnt.Reference.basic import *
+from pyvnt.DictionaryElement.foamDS import Foam
+from anytree import Node, RenderTree, AsciiStyle, NodeMixin
 from pyvnt.Reference.errorClasses import SizeError, NoPlaceholdersError, NoValueError, KeyRepeatError
 import warnings
 
-class PropertyList(ValueProperty):
+class PropertyList(ValueProperty, NodeMixin):
     '''
     A property that holds a list of values.
 
@@ -11,6 +13,7 @@ class PropertyList(ValueProperty):
         size: The size of the list.
         values: The values of the list.
         default: The default value of the list.
+        isNode: If the list is a list of nodes.
     
     Class constructor can be called in the following ways:
         PropertyList(name, size, values)
@@ -19,12 +22,57 @@ class PropertyList(ValueProperty):
 
     '''
 
-    __slots__ = ['_ValuePorperty__name', '_PropertyList__values']
+    __slots__ = ['_ValuePorperty__name', '_PropertyList__values', '_PropertyList__isNode']
 
-    def __init__(self, name: int, size: int = None, values: [ValueProperty] = [], default: ValueProperty = None):
-        super().__init__(name, default)
-        self.setProperties(name, size, values, default)
-        
+    def __init__(self, name: int, size: int = None, values: [ValueProperty] = [], default: ValueProperty = None, isNode: bool = False, parent: Foam = None):
+        super(PropertyList, self).__init__()
+        self._PropertyList__isNode = isNode
+
+        if not self._PropertyList__isNode:
+            self.setProperties(name, size, values, default)
+        else:
+            self.checkType(values = values)
+            self.name = name
+            self.data = []
+
+            if not parent:
+                raise NoValueError("No parent given for node")
+            else:
+                self.parent = parent
+
+            self.children = values
+    
+    def instance_restricted(self):
+        pass
+    
+    def checkType(self, values: [ValueProperty] = None, value: ValueProperty = None):
+        '''
+        Checks if all the values are of the same type.
+        '''
+        if value:
+            if self._PropertyList__isNode:
+                if not isinstance(value, Foam):
+                    raise TypeError("Value should be of type Foam")
+                else:
+                    pass
+            else:
+                if not isinstance(value, ValueProperty):
+                    raise TypeError("Value should be of type ValueProperty")
+                else:
+                    pass
+        elif values:
+            if self._PropertyList__isNode:
+                if not all(isinstance(i, Foam) for i in values):
+                    raise TypeError("All values should be of type Foam")
+                else:
+                    pass
+            else:
+                if not all(isinstance(i, ValueProperty) for i in values):
+                    raise TypeError("All values should be of type ValueProperty")
+                else:
+                    pass
+        else:
+            raise NoValueError("No values given for type checking")
     
     def setProperties(self, name: int, size: int, values: [ValueProperty], default: ValueProperty = None):
         '''
@@ -32,6 +80,8 @@ class PropertyList(ValueProperty):
         '''
         self._ValueProperty__name = name
 
+        self.checkType(values = values)
+        
         if size and values != []:
             if default:
                 warnings.warn("Default value will be ignored")
@@ -75,12 +125,16 @@ class PropertyList(ValueProperty):
         '''
         Appends the value to the list.
         '''
+        self.checkType(value = val)
+
         self._PropertyList__values.append(val)
     
     def append_uniq_value(self, val: ValueProperty):
         '''
         Appends the value to the list if it is not already present.
         '''
+        self.checkType(value = val)
+
         if val not in self._PropertyList__values:
             self._PropertyList__values.append(val)
         else:
@@ -99,7 +153,7 @@ class PropertyList(ValueProperty):
         '''
         Returns the list.
         '''
-        return self._PropertyList__values
+        return tuple(elem.giveVal() for elem in self._PropertyList__values)
     
     def __eq__(self, other):
         return self._PropertyList__values == other.giveVal()
