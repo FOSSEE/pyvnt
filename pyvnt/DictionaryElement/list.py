@@ -141,7 +141,7 @@ class PropertyList(ValueProperty, NodeMixin):
             raise KeyRepeatError(val)
     
     def __repr__(self):
-        return f"{self._ValueProperty__name}: {self._PropertyList__values}"
+        return f"PropertyList(name : {self._ValueProperty__name}, values : {self._PropertyList__values})"
     
     def size(self):
         '''
@@ -155,8 +155,25 @@ class PropertyList(ValueProperty, NodeMixin):
         '''
         return tuple(elem.giveVal() for elem in self._PropertyList__values)
     
+    def checkSimilarData(self):
+        '''
+        Checks if all the items inside the list are of the same type.
+        '''
+        return all(isinstance(i, type(self._PropertyList__values[0])) for i in self._PropertyList__values)
+    
+    def writeOut(self, file):
+        '''
+        Writes the list to a file
+        '''
+        # TODO: Figure out a way to know when to write multiline lists
+        res = f"{self.giveVal()}".replace(",", " ")
+        file.write(res)
+    
     def __eq__(self, other):
-        return self._PropertyList__values == other.giveVal()
+        return self.giveVal() == other.giveVal()
+    
+    def __ne__(self, other):
+        return not self.__eq__(other)
             
 
 
