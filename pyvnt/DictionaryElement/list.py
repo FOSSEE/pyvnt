@@ -141,8 +141,11 @@ class PropertyList(ValueProperty, NodeMixin):
             raise KeyRepeatError(val)
     
     def __repr__(self):
-        return f"PropertyList(name : {self._ValueProperty__name}, values : {self._PropertyList__values})"
-    
+        if not self._PropertyList__isNode:
+            return f"PropertyList(name : {self._ValueProperty__name}, values : {self._PropertyList__values})"
+        else:
+            return f"PropertyList(name : {self.name}, values : {self.children})"
+        
     def size(self):
         '''
         Returns the size of the list.
