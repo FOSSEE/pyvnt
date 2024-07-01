@@ -1,4 +1,4 @@
-from enum import IntEnum
+from enum import IntEnum, auto
 from pyvnt.Reference.errorClasses import IncorrectLengthError
 from pyvnt.Reference.basic import *
 
@@ -31,14 +31,14 @@ class DimmSet(ValueProperty):
                 7. Luminous Intensity
 
     '''
-    __slots__ = ['name', 'dimmtype', 'dimm']
+    __slots__ = ['_ValueProperty__name', '_DimmSet__dimmtype', '_DimmSet__dimm']
 
     def __init__(self, name, dimms: [] = [0] * 7):
         super(DimmSet, self).__init__()
 
-        self.dimmtype = DimmType
-        self.dimm = [0] * 7
-        self.name = name
+        self.__dimmtype = DimmType
+        self.__dimm = [0] * 7
+        self._ValueProperty__name = name
 
         if len(dimms) == 7:
             self.setProperties(*dimms)
@@ -69,28 +69,28 @@ class DimmSet(ValueProperty):
                 The dimension of luminous intensity.
         '''
         if m:
-            self.dimm[DimmType.MASS] = m
+            self.__dimm[DimmType.MASS - 1] = m
         if l:
-            self.dimm[DimmType.LENGTH] = l
+            self.__dimm[DimmType.LENGTH - 1] = l
         if t:
-            self.dimm[DimmType.TIME] = t
+            self.__dimm[DimmType.TIME - 1] = t
         if temp:
-            self.dimm[DimmType.TEMPERATURE] = tmp 
+            self.__dimm[DimmType.TEMPERATURE - 1] = temp 
         if mol:
-            self.dimm[DimmType.MOLES] = mol 
+            self.__dimm[DimmType.MOLES - 1] = mol 
         if c:
-            self.dimm[DimmType.CURRENT] = c
+            self.__dimm[DimmType.CURRENT - 1] = c
         if li:
-            self.dimm[DimmType.LUMINOUS_INTENSITY] = li
+            self.__dimm[DimmType.LUMINOUS_INTENSITY - 1] = li
     
     def __repr__(self):
-        return f"DimmSet({self.dimm})"
+        return f"DimmSet(name : {self._ValueProperty__name}, dimm : {self.__dimm})"
     
     def giveVal(self):
         '''
         Returns the dimensions of the physical quantity.
         '''
 
-        return self.dimm
+        return self.__dimm
 
     
