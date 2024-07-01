@@ -76,7 +76,7 @@ class PropertyList(ValueProperty, NodeMixin):
     
     def setProperties(self, name: int, size: int, values: [ValueProperty], default: ValueProperty = None):
         '''
-        Sets the values of the list.
+        Sets the values of the list is it is not a node.
         '''
         self._ValueProperty__name = name
 
@@ -169,6 +169,11 @@ class PropertyList(ValueProperty, NodeMixin):
         Writes the list to a file
         '''
         # TODO: Figure out a way to know when to write multiline lists
+        # The format of printing in each list differs and is dependent of the keyword of the list. 
+        # The basic structure of a list is to print elements vertically.
+        # The syntax of each element depends of the keyword of the list.
+        # If the syntax of every keyword is known, a method can be written to generate the files according to the syntax. 
+        
         res = f"{self.giveVal()}".replace(",", " ")
         file.write(res)
     
