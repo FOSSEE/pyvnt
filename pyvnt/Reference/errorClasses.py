@@ -99,4 +99,11 @@ class KeyRepeatError(Exception):
     def __str__(self):
         return f"{self.key} Already exists"
 
+class IncorrectLengthError(Exception):
+    def __init__(self, length: int):
+        self.length = length
+
+    def __str__(self):
+        return f"Length of values should be 7. Length of given list is {self.length}"
+
 
