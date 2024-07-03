@@ -22,17 +22,17 @@ class PropertyList(ValueProperty, NodeMixin):
 
     '''
 
-    __slots__ = ['_ValuePorperty__name', '_PropertyList__values', '_PropertyList__isNode']
+    __slots__ = ['_ValuePorperty__name', '_PropertyList__values', '_PropertyList__isNode', 'data', 'parent', 'children']
 
-    def __init__(self, name: int, size: int = None, values: [ValueProperty] = [], default: ValueProperty = None, isNode: bool = False, parent: Foam = None):
+    def __init__(self, name: int, size: int = None, values: [ValueProperty] = [], elems: [[ValueProperty]] = [], default: ValueProperty = None, isNode: bool = False, parent: Foam = None):
         super(PropertyList, self).__init__()
         self._PropertyList__isNode = isNode
 
         if not self._PropertyList__isNode:
-            self.setProperties(name, size, values, default)
+            self.setProperties(name, size, elems, default) # TODO: Change the method such that the class takes inputs in elements and the class stores list of elements when not acting as a node.
         else:
             self.checkType(values = values)
-            self.name = name
+            self._ValueProperty__name = name
             self.data = []
 
             if not parent:
@@ -74,15 +74,18 @@ class PropertyList(ValueProperty, NodeMixin):
         else:
             raise NoValueError("No values given for type checking")
     
-    def setProperties(self, name: int, size: int, values: [ValueProperty], default: ValueProperty = None):
+    def setProperties(self, name: int, size: int, values: [[ValueProperty]], default: ValueProperty = None):
         '''
         Sets the values of the list is it is not a node.
         '''
         self._ValueProperty__name = name
 
-        self.checkType(values = values)
+        # self.checkType(values = values)
         
         if size and values != []:
+            '''
+            If both size and list of values are given
+            '''
             if default:
                 warnings.warn("Default value will be ignored")
             else:
@@ -94,6 +97,10 @@ class PropertyList(ValueProperty, NodeMixin):
                 self._PropertyList__values = values
 
         elif not size and values != []:
+            '''
+            Only list of values is given
+            '''
+
             if default:
                 warnings.warn("Default value will be ignored")
             else:
@@ -102,6 +109,10 @@ class PropertyList(ValueProperty, NodeMixin):
             self._PropertyList__values = values
 
         elif size and values == []:
+            '''
+            Only size is given but not list of values
+            '''
+
             if default:
                 warnings.warn("Default value will be ignored")
             else:
@@ -110,35 +121,81 @@ class PropertyList(ValueProperty, NodeMixin):
             if not default:
                 raise NoPlaceholdersError("No default value")
             else:    
-                self._PropertyList__values = [default] * size
+                self._PropertyList__values = [[default]] * size
 
         else:
+            '''
+            None of the above conditions are met
+            '''
             raise NoValueError("No values given for list construction")
     
-    def getItem(self, index: int):
+    def getItem(self, elem: int, index: int = None):
         '''
         Returns the value at the given index.
+
+        Parameters: 
+            elem: The index of the element.
+            index: The index of the value in the element.(Optional)
         '''
-        return self._PropertyList__values[index]
+
+        if index:
+            return self._PropertyList__values[elem][index]
+        else:
+            return self._PropertyList__values[elem]
     
-    def append_value(self, val: ValueProperty):
+    def append_value(self, elem: int, val: ValueProperty):
         '''
-        Appends the value to the list.
+        Appends a value to the list.
+        
+        Parameters:
+            elem: The index of the element in which the value is to be appended.
+            val: The value to be appended.
         '''
         self.checkType(value = val)
 
         self._PropertyList__values.append(val)
     
-    def append_uniq_value(self, val: ValueProperty):
+    def append_uniq_value(self, elem: int, val: ValueProperty):
         '''
-        Appends the value to the list if it is not already present.
+        Appends a value to the element of the list if it is not already present.
+        
+        Parameters:
+            elem: The index of the element in which the value is to be appended.
+            val: The value to be appended.
+        
         '''
+
         self.checkType(value = val)
 
-        if val not in self._PropertyList__values:
-            self._PropertyList__values.append(val)
+        if val not in self._PropertyList__values[elem]:
+            self._PropertyList__values[elem].append(val)
         else:
             raise KeyRepeatError(val)
+    
+    def append_elem(self, elem: [ValueProperty]):
+        '''
+        Appends an element to the list.
+
+        Parameters:
+            elem: The element to be appended.
+        '''
+        self.checkType(values = elem)
+
+        self._PropertyList__values.append(elem)
+    
+    def append_uniq_elem(self, elem: [ValueProperty]):
+        '''
+        Appends an element to the list if it is not already present.
+
+        Parameters:
+            elem: The element to be appended.
+        '''
+        self.checkType(values = elem)
+
+        if elem not in self._PropertyList__values:
+            self._PropertyList__values.append(elem)
+        else:
+            raise KeyRepeatError(elem)
     
     def __repr__(self):
         if not self._PropertyList__isNode:
@@ -150,19 +207,28 @@ class PropertyList(ValueProperty, NodeMixin):
         '''
         Returns the size of the list.
         '''
-        return len(self._PropertyList__values)
+        s = 0
+        for elem in self._PropertyList__values:
+            s = s + len(elem)
+        return s
     
     def giveVal(self):
         '''
         Returns the list.
         '''
-        return tuple(elem.giveVal() for elem in self._PropertyList__values)
-    
+        res = tuple()
+
+        for elem in self._PropertyList__values:
+            for val in elem:
+                res = res + (val.giveVal(),)
+
+        return res
+        
     def checkSimilarData(self):
         '''
         Checks if all the items inside the list are of the same type.
         '''
-        return all(isinstance(i, type(self._PropertyList__values[0])) for i in self._PropertyList__values)
+        return all(isinstance(i, type(self._PropertyList__values[0][0])) for i in elem for elem in self._PropertyList__values)
     
     def writeOut(self, file):
         '''
@@ -174,7 +240,11 @@ class PropertyList(ValueProperty, NodeMixin):
         # The syntax of each element depends of the keyword of the list.
         # If the syntax of every keyword is known, a method can be written to generate the files according to the syntax. 
         
-        res = f"{self.giveVal()}".replace(",", " ")
+        res = ""
+        for elem in self._PropertyList__values:
+            for val in elem:
+                res = res + f"{val.giveVal()} "
+            res = res + "\n"
         file.write(res)
     
     def __eq__(self, other):
