@@ -183,9 +183,23 @@ class KeyData(KeyParent):
         last_elem = list(self._privateDict.keys())[-1]
 
         makeIndent(file, indent)
-        file.write(f"{self.name.ljust(col_width)}")
-        for key, val in self._privateDict.items():
-            val.writeOut(file)
-            if key != last_elem:
-                file.write(" ")
+
+        if len(self._privateDict.values()) == 1 :
+            try:
+                file.write(f"{self.name}\n")
+                for key, val in self._privateDict.items():
+                    val.writeOut(file, indent, True)
+            except e:
+                file.write(f"{self.name.ljust(col_width)}")
+                for key, val in self._privateDict.items():
+                    val.writeOut(file)
+                    if key != last_elem:
+                        file.write(" ")
+        else:
+            file.write(f"{self.name.ljust(col_width)}")
+            for key, val in self._privateDict.items():
+                val.writeOut(file)
+                if key != last_elem:
+                    file.write(" ")
+
         file.write(";\n")

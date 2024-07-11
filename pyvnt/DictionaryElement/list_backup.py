@@ -2,7 +2,6 @@ from pyvnt.Reference.basic import *
 from pyvnt.DictionaryElement.foamDS import Foam
 from anytree import Node, RenderTree, AsciiStyle, NodeMixin
 from pyvnt.Reference.errorClasses import SizeError, NoPlaceholdersError, NoValueError, KeyRepeatError
-from pyvnt.utils.makeIndent import makeIndent
 import warnings
 
 class PropertyList(ValueProperty, NodeMixin):
@@ -39,14 +38,14 @@ class PropertyList(ValueProperty, NodeMixin):
 
     __slots__ = ['_ValueProperty__name', '_PropertyList__values', '_PropertyList__isNode']
 
-    def __init__(self, name: int, size: int = None, values: [Foam] = [], elems: [[ValueProperty]] = [], default: ValueProperty = None, isNode: bool = False, parent: Foam = None):
+    def __init__(self, name: int, size: int = None, values: [ValueProperty] = [], elems: [[ValueProperty]] or [Foam] = [], default: ValueProperty = None, isNode: bool = False, parent: Foam = None):
         super(PropertyList, self).__init__()
         self.__isNode = isNode
 
         if not self.__isNode:
             self.setProperties(name, size, elems, default) # TODO: Change the method such that the class takes inputs in elements and the class stores list of elements when not acting as a node.
         else:
-            self.checkType(values = values) # All values needs to be of the type Foam as the values are all the children nodes
+            self.checkType(values = values)
             self.name = name
             self.__values = []
             self.data = []
@@ -83,24 +82,20 @@ class PropertyList(ValueProperty, NodeMixin):
                 else:
                     pass
             else:
-                for elem in values:
-                    if not all(isinstance(i, ValueProperty) for i in elem):
-                        raise TypeError("All values should be of type ValueProperty")
-                    else:
-                        pass
+                if not all(isinstance(i, ValueProperty) for i in values):
+                    raise TypeError("All values should be of type ValueProperty")
+                else:
+                    pass
         else:
             raise NoValueError("No values given for type checking")
     
     def setProperties(self, name: int, size: int, values: [[ValueProperty]], default: ValueProperty = None):
         '''
         Sets the values of the list is it is not a node.
-
-        values: it is the list of elements that are stored in the List class
-        
         '''
         self._ValueProperty__name = name
 
-        self.checkType(values = values)
+        # self.checkType(values = values)
         
         if size and values != []:
             '''
@@ -250,7 +245,7 @@ class PropertyList(ValueProperty, NodeMixin):
         '''
         return all(isinstance(i, type(self.__values[0][0])) for i in elem for elem in self.__values)
     
-    def writeOut(self, file, indent: int = 0, vert: bool = False):
+    def writeOut(self, file, indent = 0):
         '''
         Writes the list to a file
         '''
@@ -259,39 +254,13 @@ class PropertyList(ValueProperty, NodeMixin):
         # The basic structure of a list is to print elements vertically.
         # The syntax of each element depends of the keyword of the list.
         # If the syntax of every keyword is known, a method can be written to generate the files according to the syntax. 
-
-        if self.__isNode:
-            makeIndent(file, indent)
-            file.write(f"{self.name}\n")
-
-            makeIndent(file, indent)
-            file.write("(\n")
-
-            for child in self.children:
-                child.writeOut(file, indent+1)
-                file.write("\n")
-
-            makeIndent(file, indent)
-            file.write(")\n")
-        elif vert:
-            makeIndent(file, indent)
-            file.write("(\n")
-            for elem in self.__values:
-                makeIndent(file, indent+1)
-                for val in elem:
-                    val.writeOut(file)
-                    file.write(" ")
-                file.write("\n")
-            makeIndent(file, indent)
-            file.write(")")
-            
-        else:
-            res = "( "
-            for elem in self.__values:
-                for val in elem:
-                    res = res + f"{val.giveVal()} "
-            res += ")"
-            file.write(res)
+        
+        res = ""
+        for elem in self.__values:
+            for val in elem:
+                res = res + f"{val.giveVal()} "
+            res = res + "\n"
+        file.write(res)
     
     def __eq__(self, other):
         return self.giveVal() == other.giveVal()
