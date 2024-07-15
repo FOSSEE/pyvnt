@@ -20,10 +20,7 @@ class ValueProperty(ABC):
     @abstractmethod
     def instance_restricted(self):
         pass
-    
-    @abstractmethod
-    def writeOut(self, file):
-        pass
+
 
 
 class PropertyInt(ValueProperty):
