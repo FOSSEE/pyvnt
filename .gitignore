@@ -7,6 +7,8 @@ manual_debug
 manual_debug/*
 **/__pycache__/*
 .vscode
+pyrightconfig.json
+pyproject.toml
 
 
 # Byte-compiled / optimized / DLL files

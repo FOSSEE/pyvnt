@@ -61,7 +61,13 @@ class PropertyList(ValueProperty, NodeMixin):
     def instance_restricted(self):
         pass
     
-    def checkType(self, values: [ValueProperty] = None, value: ValueProperty = None):
+    def totLen(self, ar: [[ValueProperty]]= [[]]) -> int:
+        res = 0
+        for elem in ar:
+            res += len(elem)
+        return res
+    
+    def checkType(self, elems: [[ValueProperty]] = None, values: [ValueProperty] = None, value: ValueProperty = None):
         '''
         Checks if all the values are of the same type.
         '''
@@ -76,6 +82,19 @@ class PropertyList(ValueProperty, NodeMixin):
                     raise TypeError("Value should be of type ValueProperty")
                 else:
                     pass
+        elif elems:
+            if self.__isNode:
+                for v in elems:
+                    if not all(isinstance(i, Foam) for i in v):
+                        raise TypeError("All values should be of type Foam")
+                    else:
+                        pass
+            else:
+                for v in elems:
+                    if not all(isinstance(i, ValueProperty) for i in v):
+                        raise TypeError("All values should be of type ValueProperty")
+                    else:
+                        pass
         elif values:
             if self.__isNode:
                 if not all(isinstance(i, Foam) for i in values):
@@ -83,11 +102,10 @@ class PropertyList(ValueProperty, NodeMixin):
                 else:
                     pass
             else:
-                for elem in values:
-                    if not all(isinstance(i, ValueProperty) for i in elem):
-                        raise TypeError("All values should be of type ValueProperty")
-                    else:
-                        pass
+                if not all(isinstance(i, ValueProperty) for i in values):
+                    raise TypeError("All values should be of type ValueProperty")
+                else:
+                    pass
         else:
             raise NoValueError("No values given for type checking")
     
@@ -100,7 +118,7 @@ class PropertyList(ValueProperty, NodeMixin):
         '''
         self._ValueProperty__name = name
 
-        self.checkType(values = values)
+        self.checkType(elems = values)
         
         if size and values != []:
             '''
@@ -111,7 +129,7 @@ class PropertyList(ValueProperty, NodeMixin):
             else:
                 pass
 
-            if size != len(values):
+            if size != self.totLen(values):
                 raise SizeError(size)
             else:
                 self.__values = values
@@ -158,7 +176,7 @@ class PropertyList(ValueProperty, NodeMixin):
             index: The index of the value in the element.(Optional)
         '''
 
-        if index:
+        if index != None:
             return self.__values[elem][index]
         else:
             return self.__values[elem]
@@ -173,7 +191,7 @@ class PropertyList(ValueProperty, NodeMixin):
         '''
         self.checkType(value = val)
 
-        self.__values.append(val)
+        self.__values[elem].append(val)
     
     def append_uniq_value(self, elem: int, val: ValueProperty):
         '''
@@ -219,7 +237,11 @@ class PropertyList(ValueProperty, NodeMixin):
     
     def __repr__(self):
         if not self.__isNode:
-            return f"PropertyList(name : {self._ValueProperty__name}, values : {self.__values})"
+            tval = []
+            for elem in self.__values:
+                tval.append([val.giveVal() for val in elem])
+                
+            return f"PropertyList(name : {self._ValueProperty__name}, values : {tval})"
         else:
             return f"PropertyList(name : {self.name}, values : {self.children})"
         
@@ -242,6 +264,7 @@ class PropertyList(ValueProperty, NodeMixin):
             for val in elem:
                 res = res + (val.giveVal(),)
 
+        print(res)
         return res
         
     def checkSimilarData(self):
@@ -298,6 +321,3 @@ class PropertyList(ValueProperty, NodeMixin):
     
     def __ne__(self, other):
         return not self.__eq__(other)
-            
-
-
