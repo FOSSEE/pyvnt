@@ -22,6 +22,7 @@ class ValueProperty(ABC):
         pass
 
 
+
 class PropertyInt(ValueProperty):
     '''
     Property class to store integer values
