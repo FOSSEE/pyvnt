@@ -1,5 +1,5 @@
 from anytree import Node, RenderTree, AsciiStyle, NodeMixin
-from pyvnt.Container.Node_C import Foam
+from pyvnt.Container.node import Foam
 
 def show_tree(head: Foam):
     '''

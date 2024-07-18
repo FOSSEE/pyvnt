@@ -1,14 +1,15 @@
 import pytest
 
-import pyvnt.Container.Key_C as Key_C
+from pyvnt.Container.key import Key_C
 from pyvnt.Reference.basic import *
+from pyvnt.Reference.error_classes import *
 
 class TestKey_C:
     def setup_method(self, method):
         self.items = {'PCG', 'PBiCG', 'PBiCGStab'}
         self.prop2 = Enm_P('val2', items=self.items, default='PBiCG')
         self.prop1 = Enm_P('val1', items=self.items, default='PCG')
-        self.key1 = Key_C.Key_C('solver', self.prop1, self.prop2)
+        self.key1 = Key_C('solver', self.prop1, self.prop2)
     
     def teardown_method(self, method):
         del self.key1
@@ -42,11 +43,11 @@ class TestKey_C:
         tmp_prop2 = Int_P('tmpval2', 3, 1, 10)
         tmp_prop3 = Int_P('tmpval2', 4, 1, 10)
 
-        with pytest.raises(Key_C.KeyRepeatError):
+        with pytest.raises(KeyRepeatError):
             self.key1.replace_val('val1', tmp_prop1)
             self.key1.replace_val('val2', tmp_prop1)
         
-        with pytest.raises(Key_C.KeyRepeatError):
+        with pytest.raises(KeyRepeatError):
             self.key1.replace_val('val2', tmp_prop2)
             self.key1.replace_val('val2', tmp_prop3)
     

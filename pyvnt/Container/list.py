@@ -1,5 +1,5 @@
 from pyvnt.Reference.basic import *
-from pyvnt.Container.Node_C import Foam
+from pyvnt.Container.node import Foam
 from anytree import Node, RenderTree, AsciiStyle, NodeMixin
 from pyvnt.Reference.error_classes import SizeError, NoPlaceholdersError, NoValueError, KeyRepeatError
 from pyvnt.utils.make_indent import make_indent

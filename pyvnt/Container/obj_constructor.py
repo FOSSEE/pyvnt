@@ -1,5 +1,5 @@
-from pyvnt.Container.Node_C import Foam
-from pyvnt.Container.Key_C import Key_C
+from pyvnt.Container.node import Foam
+from pyvnt.Container.key import Key_C
 
 # Function no longer needed
 # It is not available to use outside the package and the code is here just for future reference if needed
