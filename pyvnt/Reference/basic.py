@@ -2,17 +2,17 @@ from dataclasses import dataclass, replace, field
 from typing import Any
 import enum
 from abc import ABC, abstractmethod
-from pyvnt.Reference.errorClasses import *
+from pyvnt.Reference.error_classes import *
 
 # Property Classes
 
-class ValueProperty(ABC):
+class Value_P(ABC):
     '''
     Abstract parent class for all the property classes
 
     Do not create oobject of this class
     '''
-    __slots__ = ('_ValueProperty__name')
+    __slots__ = ('_Value_P__name')
 
     def __init__(self):
         self.__name = ""
@@ -23,7 +23,7 @@ class ValueProperty(ABC):
 
 
 
-class PropertyInt(ValueProperty):
+class Int_P(Value_P):
     '''
     Property class to store integer values
 
@@ -34,17 +34,17 @@ class PropertyInt(ValueProperty):
         maximum: Maximum value of the range of values that can be stored in the property object (Optional, default = 100)
 
     '''
-    __slots__ = ('_ValueProperty__name', '_PropertyInt__default',
-                 '_PropertyInt__minimum', '_PropertyInt__maximum')
+    __slots__ = ('_Value_P__name', '_Int_P__default',
+                 '_Int_P__minimum', '_Int_P__maximum')
 
     def __init__(self, name: str, default: int = 1, minimum: int = 0, maximum: int = 100):
-        super(PropertyInt, self).__init__()
-        self.setProperties(name, default, minimum, maximum)
+        super(Int_P, self).__init__()
+        self.set_properties(name, default, minimum, maximum)
 
     def instance_restricted(self):
         pass
 
-    def setProperties(self, name: str, default: int, minimum: int, maximum: int):
+    def set_properties(self, name: str, default: int, minimum: int, maximum: int):
         '''
         Function to edit the values stored in the object
 
@@ -60,12 +60,12 @@ class PropertyInt(ValueProperty):
         elif default not in range(minimum, maximum+1):
             raise DefaultOutofRangeError(default)
         else:
-            self._ValueProperty__name = name
+            self._Value_P__name = name
             self.__default = default
             self.__minimum = minimum
             self.__maximum = maximum
 
-    def giveVal(self):
+    def give_val(self):
         '''
         Funciton to return the current value of the property
         '''
@@ -73,39 +73,39 @@ class PropertyInt(ValueProperty):
         return res
         
     def __repr__(self):
-        return f"PropertyInt(name = {self._ValueProperty__name}, default = {self.__default}, minimum = {self.__minimum}, maximum = {self.__maximum})"
+        return f"Int_P(name = {self._Value_P__name}, default = {self.__default}, minimum = {self.__minimum}, maximum = {self.__maximum})"
     
     def __add__(self, other):
-        return self.__default + other._PropertyFloat__default
+        return self.__default + other._Flt_P__default
     
     def __sub__(self, other):
-        return self.__default - other._PropertyFloat__default
+        return self.__default - other._Flt_P__default
     
     def __mul__(self, other):
-        return self.__default * other._PropertyFloat__default
+        return self.__default * other._Flt_P__default
 
     def __truediv__(self, other):
-        return self.__default / other._PropertyFloat__default
+        return self.__default / other._Flt_P__default
     
     def __gt__(self, other):
-        return self.__default > other._PropertyFloat__default
+        return self.__default > other._Flt_P__default
     
     def __lt__(self, other):
-        return self.__default < other._PropertyFloat__default
+        return self.__default < other._Flt_P__default
     
     def __le__(self, other):
-        return self.__default <= other._PropertyFloat__default
+        return self.__default <= other._Flt_P__default
     
     def __ge__(self, other):
-        return self.__default >= other._PropertyFloat__default
+        return self.__default >= other._Flt_P__default
     
     def __eq__(self, other):
-        return self.__default == other._PropertyFloat__default
+        return self.__default == other._Flt_P__default
     
     def __ne__(self, other):
-        return self.__default != other._PropertyFloat__default
+        return self.__default != other._Flt_P__default
 
-    def writeOut(self, file):
+    def write_out(self, file):
         '''
         Function to write the object to a file
         '''
@@ -113,7 +113,7 @@ class PropertyInt(ValueProperty):
 
 
 
-class PropertyFloat(ValueProperty):
+class Flt_P(Value_P):
     '''
     Property class to store float values
 
@@ -125,17 +125,17 @@ class PropertyFloat(ValueProperty):
 
     '''
 
-    __slots__ = ('_ValueProperty__name', '_PropertyFloat__default',
-                 '_PropertyFloat__minimum', '_PropertyFloat__maximum')
+    __slots__ = ('_Value_P__name', '_Flt_P__default',
+                 '_Flt_P__minimum', '_Flt_P__maximum')
 
     def __init__(self, name=str, default: float = 1.0, minimum: float = 0.0, maximum: float = 100.0):
-        super(PropertyFloat, self).__init__()
-        self.setProperties(name, default, minimum, maximum)
+        super(Flt_P, self).__init__()
+        self.set_properties(name, default, minimum, maximum)
 
     def instance_restricted(self):
         pass
 
-    def setProperties(self, name: str, default: float, minimum: float, maximum: float):
+    def set_properties(self, name: str, default: float, minimum: float, maximum: float):
         '''
         Function to edit the values stored in the object
 
@@ -151,12 +151,12 @@ class PropertyFloat(ValueProperty):
         elif default > maximum or default < minimum:
             raise DefaultOutofRangeError(default)
         else:
-            self._ValueProperty__name = name
+            self._Value_P__name = name
             self.__default = default
             self.__minimum = minimum
             self.__maximum = maximum
     
-    def giveVal(self):
+    def give_val(self):
         '''
         Funciton to return the current value of the property
         '''
@@ -164,39 +164,39 @@ class PropertyFloat(ValueProperty):
         return res
 
     def __repr__(self):
-        return f"PropertyFloat(name = {self._ValueProperty__name}, default = {self.__default}, minimum = {self.__minimum}, maximum = {self.__maximum})"
+        return f"Flt_P(name = {self._Value_P__name}, default = {self.__default}, minimum = {self.__minimum}, maximum = {self.__maximum})"
     
     def __add__(self, other):
-        return self.__default + other._PropertyFloat__default
+        return self.__default + other._Flt_P__default
     
     def __sub__(self, other):
-        return self.__default - other._PropertyFloat__default
+        return self.__default - other._Flt_P__default
     
     def __mul__(self, other):
-        return self.__default * other._PropertyFloat__default
+        return self.__default * other._Flt_P__default
 
     def __truediv__(self, other):
-        return self.__default / other._PropertyFloat__default
+        return self.__default / other._Flt_P__default
     
     def __gt__(self, other):
-        return self.__default > other._PropertyFloat__default
+        return self.__default > other._Flt_P__default
     
     def __lt__(self, other):
-        return self.__default < other._PropertyFloat__default
+        return self.__default < other._Flt_P__default
     
     def __le__(self, other):
-        return self.__default <= other._PropertyFloat__default
+        return self.__default <= other._Flt_P__default
     
     def __ge__(self, other):
-        return self.__default >= other._PropertyFloat__default
+        return self.__default >= other._Flt_P__default
     
     def __eq__(self, other):
-        return self.__default == other._PropertyFloat__default
+        return self.__default == other._Flt_P__default
     
     def __ne__(self, other):
-        return self.__default != other._PropertyFloat__default
+        return self.__default != other._Flt_P__default
       
-    def writeOut(self, file):
+    def write_out(self, file):
         '''
         Function to write the object to a file
         '''
@@ -204,7 +204,7 @@ class PropertyFloat(ValueProperty):
 
 
 
-class PropertyString(ValueProperty): # for testing purposes only, to be scrapped
+class Str_P(Value_P): # for testing purposes only, to be scrapped
     '''
     Property class to store string values
 
@@ -213,16 +213,16 @@ class PropertyString(ValueProperty): # for testing purposes only, to be scrapped
         default: Current value of the property (Optional, default = "")
 
     '''
-    __slots__ = ('_ValueProperty__name', '_PropertyString__default')
+    __slots__ = ('_Value_P__name', '_Str_P__default')
 
     def __init__(self, name: str,  default: str = ""):
-        super(PropertyString, self).__init__()
-        self.setProperties(name, default)
+        super(Str_P, self).__init__()
+        self.set_properties(name, default)
 
     def instance_restricted(self):
         pass
 
-    def setProperties(self, name: str, default: str):
+    def set_properties(self, name: str, default: str):
         '''
         Function to edit the values stored in the object
 
@@ -231,10 +231,10 @@ class PropertyString(ValueProperty): # for testing purposes only, to be scrapped
             default: Current value of the property 
             
         '''
-        self._ValueProperty__name = name
+        self._Value_P__name = name
         self.__default = default
     
-    def giveVal(self):
+    def give_val(self):
         '''
         Funciton to return the current value of the property
         '''
@@ -242,10 +242,10 @@ class PropertyString(ValueProperty): # for testing purposes only, to be scrapped
         return res
 
     def __repr__(self):
-        return f"PropertyString(name = {self._ValueProperty__name}, default = '{self.__default}')"
+        return f"Str_P(name = {self._Value_P__name}, default = '{self.__default}')"
 
 
-class EnumProp(ValueProperty):
+class Enm_P(Value_P):
     '''
     Property class to store values that are usually a choice out of many possible choices(string data)
 
@@ -256,11 +256,11 @@ class EnumProp(ValueProperty):
 
     '''
 
-    __slots__ = ('_ValueProperty__name', '_EnumProp__items', '_EnumProp__default')
+    __slots__ = ('_Value_P__name', '_Enm_P__items', '_Enm_P__default')
 
     def __init__(self, name: str, items: {str}, default: str):
-        super(EnumProp, self).__init__()
-        self.setProperties(name, items, default)
+        super(Enm_P, self).__init__()
+        self.set_properties(name, items, default)
 
     def instance_restricted(self):
         pass
@@ -307,7 +307,7 @@ class EnumProp(ValueProperty):
         else:
             raise ValueOutofRangeError(val)
 
-    def setProperties(self, name: str, items: {str}, default: str):
+    def set_properties(self, name: str, items: {str}, default: str):
         '''
         Function to edit the values stored in the object
 
@@ -329,21 +329,21 @@ class EnumProp(ValueProperty):
         if default not in items:
             raise DefaultOutofRangeError(default)
 
-        self._ValueProperty__name = name
+        self._Value_P__name = name
         self.__items = items
         self.__default = default
 
     def __repr__(self):
-        return f"EnumProp(name = {self._ValueProperty__name}, items = {self.__items}, default = {self.__default})"
+        return f"Enm_P(name = {self._Value_P__name}, items = {self.__items}, default = {self.__default})"
 
-    def giveVal(self):
+    def give_val(self):
         '''
         Funciton to return the current value of the property
         '''
         res = self.__default
         return res
     
-    def writeOut(self, file):
+    def write_out(self, file):
         '''
         Function to write the object to a file
         '''

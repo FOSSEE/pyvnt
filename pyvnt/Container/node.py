@@ -1,9 +1,9 @@
 from anytree import Node, RenderTree, AsciiStyle, NodeMixin
 from anytree.search import find_by_attr
 from typing import Any, Type
-from pyvnt.DictionaryElement.keyData import KeyData
-from pyvnt.Reference.errorClasses import *
-from pyvnt.utils.makeIndent import makeIndent
+from pyvnt.Container.Key_C import Key_C
+from pyvnt.Reference.error_classes import *
+from pyvnt.utils.make_indent import make_indent
 
 '''
 Criteria for classes:
@@ -24,7 +24,7 @@ class Foam(NodeMixin):
 
     # __slots__ = ('name', 'parent', 'children', 'data')
 
-    def __init__(self, name: str, parent = None, children: [] = None, *args: KeyData):
+    def __init__(self, name: str, parent = None, children: [] = None, *args: Key_C):
 
         super(Foam, self).__init__()
         # self._privateDict = kwargs
@@ -70,7 +70,7 @@ class Foam(NodeMixin):
     #         print(treestr.ljust(8), s)
     
 
-    def addChild(self, node):
+    def add_child(self, node):
         '''
         Function to add a child node to the current node
 
@@ -80,7 +80,7 @@ class Foam(NodeMixin):
         self.children += (node, )
     
 
-    def setParent(self, node):
+    def set_Parent(self, node):
         '''
         Function to set the parent node to the current node
 
@@ -96,7 +96,7 @@ class Foam(NodeMixin):
         res_str = res_str + ")"
         return res_str
     
-    def getChild(self, val: str):
+    def get_child(self, val: str):
         '''
         Function to find a child node with the given attribute
 
@@ -105,9 +105,9 @@ class Foam(NodeMixin):
         '''
         return find_by_attr(self, val, maxlevel = 2)
 
-    def addData(self, data: KeyData, pos: int = None):
+    def add_data(self, data: Key_C, pos: int = None):
         '''
-        Function to add KeyData attributes to the existing Node
+        Function to add Key_C attributes to the existing Node
         '''
 
         if pos != None:
@@ -115,9 +115,9 @@ class Foam(NodeMixin):
         else:
             self.data.append(data)
     
-    def removeData(self, data: KeyData):
+    def remove_data(self, data: Key_C):
         '''
-        Function to remove a keydata attribute from the node
+        Function to remove a Key_C attribute from the node
         '''
 
         try: 
@@ -125,7 +125,7 @@ class Foam(NodeMixin):
         except:
             raise AttributeError(f"{data.name} does not exist in this node")
     
-    def reorderData(self, data: KeyData, pos: int):
+    def reorder_data(self, data: Key_C, pos: int):
         '''
         Function to reorder the data in the node
         '''
@@ -136,7 +136,7 @@ class Foam(NodeMixin):
         except:
             raise AttributeError(f"{data.name} does not exist in this node")
     
-    def writeOut(self, file, indent = 0):
+    def write_out(self, file, indent = 0):
         '''
         Function to write the current node to the file
         '''
@@ -150,26 +150,26 @@ class Foam(NodeMixin):
             file.write("{\n")
             for d in self.data:
                 file.write("\t")
-                d.writeOut(file)
+                d.write_out(file)
             file.write("}\n")
         '''
 
-        makeIndent(file, indent)
+        make_indent(file, indent)
         file.write(f"{self.name}\n")
 
-        makeIndent(file, indent)
+        make_indent(file, indent)
         file.write("{\n")
 
         for d in self.data:
-            d.writeOut(file, indent+1)
+            d.write_out(file, indent+1)
 
-        # makeIndent(file, indent)
+        # make_indent(file, indent)
 
         for child in self.children:
-            child.writeOut(file, indent+1)
+            child.write_out(file, indent+1)
             file.write("\n")
 
-        makeIndent(file, indent)
+        make_indent(file, indent)
         file.write("}\n")
 
 

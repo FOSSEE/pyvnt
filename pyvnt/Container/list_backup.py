@@ -1,10 +1,10 @@
 from pyvnt.Reference.basic import *
-from pyvnt.DictionaryElement.foamDS import Foam
+from pyvnt.Container.Node_C import Foam
 from anytree import Node, RenderTree, AsciiStyle, NodeMixin
-from pyvnt.Reference.errorClasses import SizeError, NoPlaceholdersError, NoValueError, KeyRepeatError
+from pyvnt.Reference.error_classes import SizeError, NoPlaceholdersError, NoValueError, KeyRepeatError
 import warnings
 
-class PropertyList(ValueProperty, NodeMixin):
+class List_CP(Value_P, NodeMixin):
     '''
     A property that holds a list of elements.
 
@@ -30,22 +30,22 @@ class PropertyList(ValueProperty, NodeMixin):
         isNode: If the list is a list of nodes.
     
     Class constructor can be called in the following ways:
-        PropertyList(name, size, values)
-        PropertyList(name, values)
-        PropertyList(name, size, default)
+        List_CP(name, size, values)
+        List_CP(name, values)
+        List_CP(name, size, default)
 
     '''
 
-    __slots__ = ['_ValueProperty__name', '_PropertyList__values', '_PropertyList__isNode']
+    __slots__ = ['_Value_P__name', '_List_CP__values', '_List_CP__isNode']
 
-    def __init__(self, name: int, size: int = None, values: [ValueProperty] = [], elems: [[ValueProperty]] or [Foam] = [], default: ValueProperty = None, isNode: bool = False, parent: Foam = None):
-        super(PropertyList, self).__init__()
+    def __init__(self, name: int, size: int = None, values: [Value_P] = [], elems: [[Value_P]] or [Foam] = [], default: Value_P = None, isNode: bool = False, parent: Foam = None):
+        super(List_CP, self).__init__()
         self.__isNode = isNode
 
         if not self.__isNode:
-            self.setProperties(name, size, elems, default) # TODO: Change the method such that the class takes inputs in elements and the class stores list of elements when not acting as a node.
+            self.set_properties(name, size, elems, default) # TODO: Change the method such that the class takes inputs in elements and the class stores list of elements when not acting as a node.
         else:
-            self.checkType(values = values)
+            self.check_type(values = values)
             self.name = name
             self.__values = []
             self.data = []
@@ -60,7 +60,7 @@ class PropertyList(ValueProperty, NodeMixin):
     def instance_restricted(self):
         pass
     
-    def checkType(self, values: [ValueProperty] = None, value: ValueProperty = None):
+    def check_type(self, values: [Value_P] = None, value: Value_P = None):
         '''
         Checks if all the values are of the same type.
         '''
@@ -71,8 +71,8 @@ class PropertyList(ValueProperty, NodeMixin):
                 else:
                     pass
             else:
-                if not isinstance(value, ValueProperty):
-                    raise TypeError("Value should be of type ValueProperty")
+                if not isinstance(value, Value_P):
+                    raise TypeError("Value should be of type Value_P")
                 else:
                     pass
         elif values:
@@ -82,20 +82,20 @@ class PropertyList(ValueProperty, NodeMixin):
                 else:
                     pass
             else:
-                if not all(isinstance(i, ValueProperty) for i in values):
-                    raise TypeError("All values should be of type ValueProperty")
+                if not all(isinstance(i, Value_P) for i in values):
+                    raise TypeError("All values should be of type Value_P")
                 else:
                     pass
         else:
             raise NoValueError("No values given for type checking")
     
-    def setProperties(self, name: int, size: int, values: [[ValueProperty]], default: ValueProperty = None):
+    def set_properties(self, name: int, size: int, values: [[Value_P]], default: Value_P = None):
         '''
         Sets the values of the list is it is not a node.
         '''
-        self._ValueProperty__name = name
+        self._Value_P__name = name
 
-        # self.checkType(values = values)
+        # self.check_type(values = values)
         
         if size and values != []:
             '''
@@ -144,7 +144,7 @@ class PropertyList(ValueProperty, NodeMixin):
             '''
             raise NoValueError("No values given for list construction")
     
-    def getItem(self, elem: int, index: int = None):
+    def get_item(self, elem: int, index: int = None):
         '''
         Returns the value at the given index.
 
@@ -158,7 +158,7 @@ class PropertyList(ValueProperty, NodeMixin):
         else:
             return self.__values[elem]
     
-    def append_value(self, elem: int, val: ValueProperty):
+    def append_value(self, elem: int, val: Value_P):
         '''
         Appends a value to the list.
         
@@ -166,11 +166,11 @@ class PropertyList(ValueProperty, NodeMixin):
             elem: The index of the element in which the value is to be appended.
             val: The value to be appended.
         '''
-        self.checkType(value = val)
+        self.check_type(value = val)
 
         self.__values.append(val)
     
-    def append_uniq_value(self, elem: int, val: ValueProperty):
+    def append_uniq_value(self, elem: int, val: Value_P):
         '''
         Appends a value to the element of the list if it is not already present.
         
@@ -180,32 +180,32 @@ class PropertyList(ValueProperty, NodeMixin):
         
         '''
 
-        self.checkType(value = val)
+        self.check_type(value = val)
 
         if val not in self.__values[elem]:
             self.__values[elem].append(val)
         else:
             raise KeyRepeatError(val)
     
-    def append_elem(self, elem: [ValueProperty]):
+    def append_elem(self, elem: [Value_P]):
         '''
         Appends an element to the list.
 
         Parameters:
             elem: The element to be appended.
         '''
-        self.checkType(values = elem)
+        self.check_type(values = elem)
 
         self.__values.append(elem)
     
-    def append_uniq_elem(self, elem: [ValueProperty]):
+    def append_uniq_elem(self, elem: [Value_P]):
         '''
         Appends an element to the list if it is not already present.
 
         Parameters:
             elem: The element to be appended.
         '''
-        self.checkType(values = elem)
+        self.check_type(values = elem)
 
         if elem not in self.__values:
             self.__values.append(elem)
@@ -214,9 +214,9 @@ class PropertyList(ValueProperty, NodeMixin):
     
     def __repr__(self):
         if not self.__isNode:
-            return f"PropertyList(name : {self._ValueProperty__name}, values : {self.__values})"
+            return f"List_CP(name : {self._Value_P__name}, values : {self.__values})"
         else:
-            return f"PropertyList(name : {self.name}, values : {self.children})"
+            return f"List_CP(name : {self.name}, values : {self.children})"
         
     def size(self):
         '''
@@ -227,7 +227,7 @@ class PropertyList(ValueProperty, NodeMixin):
             s = s + len(elem)
         return s
     
-    def giveVal(self):
+    def give_val(self):
         '''
         Returns the list.
         '''
@@ -235,17 +235,17 @@ class PropertyList(ValueProperty, NodeMixin):
 
         for elem in self.__values:
             for val in elem:
-                res = res + (val.giveVal(),)
+                res = res + (val.give_val(),)
 
         return res
         
-    def checkSimilarData(self):
+    def check_similar_data(self):
         '''
         Checks if all the items inside the list are of the same type.
         '''
         return all(isinstance(i, type(self.__values[0][0])) for i in elem for elem in self.__values)
     
-    def writeOut(self, file, indent = 0):
+    def write_out(self, file, indent = 0):
         '''
         Writes the list to a file
         '''
@@ -258,12 +258,12 @@ class PropertyList(ValueProperty, NodeMixin):
         res = ""
         for elem in self.__values:
             for val in elem:
-                res = res + f"{val.giveVal()} "
+                res = res + f"{val.give_val()} "
             res = res + "\n"
         file.write(res)
     
     def __eq__(self, other):
-        return self.giveVal() == other.giveVal()
+        return self.give_val() == other.give_val()
     
     def __ne__(self, other):
         return not self.__eq__(other)

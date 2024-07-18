@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from collections import OrderedDict
 from anytree import NodeMixin
 from pyvnt.Reference.basic import *
-from pyvnt.utils.makeIndent import makeIndent
+from pyvnt.utils.make_indent import make_indent
 
 
 '''
@@ -12,7 +12,7 @@ Criteria for classes:
 3. the attributed should not be accesible through . operator -- done by name mangling(__var)
 '''
 
-class KeyParent(ABC):
+class Key_Parent(ABC):
     '''
     Abstract class to make sure that attributes cannot be inserted into the child class directly
     Do not make objects of this class
@@ -28,22 +28,22 @@ class KeyParent(ABC):
 # TODO: prevent access of attributes from outside the class  -- done
 # Currently the attributes can be edited from outside the class, which should not be possible
 # TODO: Modify such that constructor takes in no attribute by default. After making the constructor, use a method to insert attributes -- done
-class KeyData(KeyParent):
+class Key_C(Key_Parent):
 
     def instance_restricted(self):
         pass
         
-    # def old__init__(self, name=None, **kwargs: ValueProperty): # old init method, 
-    #     super(KeyData, self).__init__(name)
+    # def old__init__(self, name=None, **kwargs: Value_P): # old init method, 
+    #     super(Key_C, self).__init__(name)
     #     self.__dict__.update(kwargs)
     #     # self.__toggle_freeze()
 
-    def __init__(self, name: str = None, *args: ValueProperty):
-        super(KeyData, self).__init__(name)
+    def __init__(self, name: str = None, *args: Value_P):
+        super(Key_C, self).__init__(name)
 
         tmp = {}
         for e in args:
-            tmp[e._ValueProperty__name] = e
+            tmp[e._Value_P__name] = e
         
         self._privateDict = OrderedDict(tmp)
 
@@ -69,14 +69,14 @@ class KeyData(KeyParent):
         else :
             raise AttributeError(key)
 
-    def appendVal(self, key: "str", val: ValueProperty):
+    def append_val(self, key: "str", val: Value_P):
         self._privateDict[key] = val
 
     '''
-    # TODO: Take input of the object to be replaced or the obejct name instead of the variable name as the string. -- done in replaceVal2
+    # TODO: Take input of the object to be replaced or the obejct name instead of the variable name as the string. -- done in replace_val2
     This piece of code is here to remind devs about what not to do
 
-    def replaceVal(self, oldKey: str, newKey: str, newVal: ValueProperty):
+    def replace_val(self, oldKey: str, newKey: str, newVal: Value_P):
 
         if oldKey == newKey:
             self.__dict__[newKey] = newVal
@@ -90,13 +90,13 @@ class KeyData(KeyParent):
                 self.__dict__[newKey] = newVal
     
 
-    def replaceVal2(self, old: ValueProperty | str, new: ValueProperty):
+    def replace_val2(self, old: Value_P | str, new: Value_P):
         if type(old) == str:
             oldKey = old
         else:
-            oldKey = old._ValueProperty__name
+            oldKey = old._Value_P__name
         
-        newKey = new._ValueProperty__name
+        newKey = new._Value_P__name
 
         if oldKey == newKey:
             self.__dict__[newKey] = new
@@ -110,7 +110,7 @@ class KeyData(KeyParent):
                 self.__dict__[newKey] = new
     '''
 
-    def replaceVal(self, old: ValueProperty or str, new: ValueProperty): # uses orderedDict instead of regular Dictionary
+    def replace_val(self, old: Value_P or str, new: Value_P): # uses orderedDict instead of regular Dictionary
         '''
         Function to insert and edit values in the class object once it is created
 
@@ -125,9 +125,9 @@ class KeyData(KeyParent):
         if type(old) == str:
             oldKey = old
         else:
-            oldKey = old._ValueProperty__name
+            oldKey = old._Value_P__name
         
-        newKey = new._ValueProperty__name
+        newKey = new._Value_P__name
 
         if oldKey == newKey:
             # self.__dict__[newKey] = new
@@ -138,7 +138,7 @@ class KeyData(KeyParent):
             else:
                 self._privateDict = OrderedDict([(newKey, new) if k == oldKey else (k, v) for k, v in self._privateDict.items()])
 
-    def delVal(self, key: str):
+    def delete_val(self, key: str):
         '''
         Function to delete a given key from the object
 
@@ -149,7 +149,7 @@ class KeyData(KeyParent):
 
     def __repr__(self):
         last_elem = list(self._privateDict.keys())[-1]
-        res_str = f"KeyData("
+        res_str = f"Key_C("
         for key, val in self._privateDict.items():
             res_str = res_str + f"{key} : {val}"
             if key != last_elem:
@@ -158,7 +158,7 @@ class KeyData(KeyParent):
 
         return res_str
     
-    def giveVal(self):
+    def give_val(self):
         '''
         Function to get all the keys and values stored in the object in a text format
         '''
@@ -169,36 +169,36 @@ class KeyData(KeyParent):
             if key == 'name':
                 continue
             else:
-                res = res + f"{val.giveVal()}"
+                res = res + f"{val.give_val()}"
                 if key != last_elem:
                     res = res + ", "
         
         return res
     
-    def writeOut(self, file, indent = 0):
+    def write_out(self, file, indent = 0):
         '''
         Function to write the object to a file
         '''
         col_width = 16
         last_elem = list(self._privateDict.keys())[-1]
 
-        makeIndent(file, indent)
+        make_indent(file, indent)
 
         if len(self._privateDict.values()) == 1 :
             try:
                 file.write(f"{self.name}\n")
                 for key, val in self._privateDict.items():
-                    val.writeOut(file, indent, True)
+                    val.write_out(file, indent, True)
             except e:
                 file.write(f"{self.name.ljust(col_width)}")
                 for key, val in self._privateDict.items():
-                    val.writeOut(file)
+                    val.write_out(file)
                     if key != last_elem:
                         file.write(" ")
         else:
             file.write(f"{self.name.ljust(col_width)}")
             for key, val in self._privateDict.items():
-                val.writeOut(file)
+                val.write_out(file)
                 if key != last_elem:
                     file.write(" ")
 

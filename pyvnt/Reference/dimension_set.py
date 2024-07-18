@@ -1,8 +1,8 @@
 from enum import IntEnum, auto
-from pyvnt.Reference.errorClasses import IncorrectLengthError
+from pyvnt.Reference.error_classes import IncorrectLengthError
 from pyvnt.Reference.basic import *
 
-class DimmType(IntEnum):
+class Dim_Type(IntEnum):
     MASS = auto()
     LENGTH = auto()
     TIME = auto()
@@ -11,9 +11,9 @@ class DimmType(IntEnum):
     CURRENT = auto()
     LUMINOUS_INTENSITY = auto()
 
-class DimmSet(ValueProperty):
+class Dim_Set_P(Value_P):
     '''
-    DimmSet class is a class that represents a set of dimensions.
+    Dim_Set_P class is a class that represents a set of dimensions.
     It is used to represent the dimensions of a physical quantity.
 
     Contrsucor Parameters:
@@ -31,24 +31,24 @@ class DimmSet(ValueProperty):
                 7. Luminous Intensity
 
     '''
-    __slots__ = ['_ValueProperty__name', '_DimmSet__dimmtype', '_DimmSet__dimm']
+    __slots__ = ['_Value_P__name', '_Dim_Set_P__Dim_Type', '_Dim_Set_P__dimm']
 
     def __init__(self, name, dimms: [] = [0] * 7):
-        super(DimmSet, self).__init__()
+        super(Dim_Set_P, self).__init__()
 
-        self.__dimmtype = DimmType
+        self.__Dim_Type = Dim_Type
         self.__dimm = [0] * 7
-        self._ValueProperty__name = name
+        self._Value_P__name = name
 
         if len(dimms) == 7:
-            self.setProperties(*dimms)
+            self.set_properties(*dimms)
         else:
             raise IncorrectLengthError(len(dimms))
     
     def instance_restricted(self):
         pass
     
-    def setProperties(self, m = 0, l = 0, t = 0, temp = 0, mol = 0, c = 0, li = 0):
+    def set_properties(self, m = 0, l = 0, t = 0, temp = 0, mol = 0, c = 0, li = 0):
         '''
         Sets the dimensions of the physical quantity.
 
@@ -69,24 +69,24 @@ class DimmSet(ValueProperty):
                 The dimension of luminous intensity.
         '''
         if m:
-            self.__dimm[DimmType.MASS - 1] = m
+            self.__dimm[Dim_Type.MASS - 1] = m
         if l:
-            self.__dimm[DimmType.LENGTH - 1] = l
+            self.__dimm[Dim_Type.LENGTH - 1] = l
         if t:
-            self.__dimm[DimmType.TIME - 1] = t
+            self.__dimm[Dim_Type.TIME - 1] = t
         if temp:
-            self.__dimm[DimmType.TEMPERATURE - 1] = temp 
+            self.__dimm[Dim_Type.TEMPERATURE - 1] = temp 
         if mol:
-            self.__dimm[DimmType.MOLES - 1] = mol 
+            self.__dimm[Dim_Type.MOLES - 1] = mol 
         if c:
-            self.__dimm[DimmType.CURRENT - 1] = c
+            self.__dimm[Dim_Type.CURRENT - 1] = c
         if li:
-            self.__dimm[DimmType.LUMINOUS_INTENSITY - 1] = li
+            self.__dimm[Dim_Type.LUMINOUS_INTENSITY - 1] = li
     
     def __repr__(self):
-        return f"DimmSet(name : {self._ValueProperty__name}, dimm : {self.__dimm})"
+        return f"Dim_Set_P(name : {self._Value_P__name}, dimm : {self.__dimm})"
     
-    def giveVal(self):
+    def give_val(self):
         '''
         Returns the dimensions of the physical quantity.
         '''

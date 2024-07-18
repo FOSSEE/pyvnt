@@ -2,39 +2,39 @@ from pyvnt.Reference.basic import *
 from typing import Self
 import math
 
-class PropertyVector(ValueProperty):
+class Vector_P(Value_P):
     '''
     Property Class to store vector values
 
     Constructor Parameters:
         name: Name of the property of which vector value is to be stored
-        x: PropertyFloat object to store x value of the vector
-        y: PropertyFloat object to store y value of the vector
-        z: PropertyFloat object to store z value of the vector
+        x: Flt_P object to store x value of the vector
+        y: Flt_P object to store y value of the vector
+        z: Flt_P object to store z value of the vector
     '''
 
-    __slots__ = ('_ValueProperty__name', '_PropertyVector__x', '_PropertyVector__y', '_PropertyVector__z')
+    __slots__ = ('_Value_P__name', '_Vector_P__x', '_Vector_P__y', '_Vector_P__z')
 
     def instance_restricted(self):
         pass
     
     # TODO: Confirm about the format exoected from a vector
-    def __init__(self, name: str, x: PropertyFloat, y: PropertyFloat, z: PropertyFloat):
-        super(PropertyVector, self).__init__()
-        self.setProperties(name, x, y, z)
+    def __init__(self, name: str, x: Flt_P, y: Flt_P, z: Flt_P):
+        super(Vector_P, self).__init__()
+        self.set_properties(name, x, y, z)
     
-    def setProperties(self, name: str = None, x: PropertyFloat = None, y: PropertyFloat = None, z: PropertyFloat = None) -> None:
+    def set_properties(self, name: str = None, x: Flt_P = None, y: Flt_P = None, z: Flt_P = None) -> None:
         '''
         Function to edit the values stored in the object
 
         Parameters:
         name: Name of the property of which vector value is to be stored
-        x: PropertyFloat object to store x value of the vector
-        y: PropertyFloat object to store y value of the vector
-        z: PropertyFloat object to store z value of the vector
+        x: Flt_P object to store x value of the vector
+        y: Flt_P object to store y value of the vector
+        z: Flt_P object to store z value of the vector
         '''
         if name:
-            self._ValueProperty__name = name
+            self._Value_P__name = name
         
         if x:
             self.__x = x
@@ -50,27 +50,27 @@ class PropertyVector(ValueProperty):
         Returns the x value of the vector
         '''
 
-        return self.__x.giveVal()
+        return self.__x.give_val()
     
     def y(self) -> float:
         '''
         Returns the y value of the vector
         '''
-        return self.__y.giveVal()
+        return self.__y.give_val()
     
     def z(self) -> float:
         '''
         Returns the z value of the vector
         '''
-        return self.__z.giveVal()
+        return self.__z.give_val()
     
     def magnitude(self) -> float:
         '''
         Returns the magnitude of the vector
         '''
-        return math.sqrt(self.__x.giveVal()**2 + self.__y.giveVal()**2 + self.__z.giveVal()**2)
+        return math.sqrt(self.__x.give_val()**2 + self.__y.give_val()**2 + self.__z.give_val()**2)
     
-    def normalise(self, tol: PropertyFloat) -> Self:
+    def normalise(self, tol: Flt_P) -> Self:
         '''
         Normalises the vector
 
@@ -78,26 +78,26 @@ class PropertyVector(ValueProperty):
             tol: The tolerance value for the normalisation. If the magnitude of the vector is less than the tolerance, the vector is set to 0.
         '''
         s = self.magnitude()
-        if s < tol.giveVal():
-            self.setProperties(self._ValueProperty__name, PropertyFloat(self._ValueProperty__name + "_x", 0), PropertyFloat(self._ValueProperty__name + "_y", 0), PropertyFloat(self._ValueProperty__name + "_z", 0))
+        if s < tol.give_val():
+            self.set_properties(self._Value_P__name, Flt_P(self._Value_P__name + "_x", 0), Flt_P(self._Value_P__name + "_y", 0), Flt_P(self._Value_P__name + "_z", 0))
         else:
-            self.setProperties(self._ValueProperty__name, PropertyFloat(self._ValueProperty__name + "_x", self.__x.giveVal()/s), PropertyFloat(self._ValueProperty__name + "_y", self.__y.giveVal()/s), PropertyFloat(self._ValueProperty__name + "_z", self.__z.giveVal()/s))
+            self.set_properties(self._Value_P__name, Flt_P(self._Value_P__name + "_x", self.__x.give_val()/s), Flt_P(self._Value_P__name + "_y", self.__y.give_val()/s), Flt_P(self._Value_P__name + "_z", self.__z.give_val()/s))
         return self
     
-    def giveVal(self):
+    def give_val(self):
         '''
         Returns the vector value
         '''
 
-        res = (self.__x.giveVal(), self.__y.giveVal(), self.__z.giveVal())
+        res = (self.__x.give_val(), self.__y.give_val(), self.__z.give_val())
 
         return res
 
-    def writeOut(self, file):
+    def write_out(self, file):
         '''
         Returns the vector value in a string format
         '''
-        file.write( f"({self.__x.giveVal()} {self.__y.giveVal()} {self.__z.giveVal()})")
+        file.write( f"({self.__x.give_val()} {self.__y.give_val()} {self.__z.give_val()})")
 
     def __repr__(self):
-        return f"PropertyVector(name = {self._ValueProperty__name}, x = {self.__x.giveVal()}, y = {self.__y.giveVal()}, z = {self.__z.giveVal()})"
+        return f"Vector_P(name = {self._Value_P__name}, x = {self.__x.give_val()}, y = {self.__y.give_val()}, z = {self.__z.give_val()})"

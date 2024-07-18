@@ -1,7 +1,7 @@
 from anytree import Node, RenderTree, AsciiStyle, NodeMixin
-from pyvnt.DictionaryElement.foamDS import Foam
+from pyvnt.Container.Node_C import Foam
 
-def showTree(head: Foam):
+def show_tree(head: Foam):
     '''
     Function to output the entire tree in the terminal starting from the current node object
 
@@ -16,7 +16,7 @@ def showTree(head: Foam):
         attr = "%s{ \n" % (fill)
         for d in node.data:
 
-            tmp_str = u"%s   %s" % (fill, d.giveVal())
+            tmp_str = u"%s   %s" % (fill, d.give_val())
             attr = attr + tmp_str + "\n"
         attr = attr + "%s}"%(fill)
 

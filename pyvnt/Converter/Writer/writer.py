@@ -1,4 +1,4 @@
-from pyvnt.DictionaryElement import *
+from pyvnt.Container import *
 
 def writeTo(root, path):
     '''
@@ -10,4 +10,4 @@ def writeTo(root, path):
 
     '''
     with open(path, "w") as file:
-        root.writeOut(file)
+        root.write_out(file)
