@@ -12,7 +12,7 @@ Criteria for classes:
 3. the attributed should not be accesible through . operator -- done by name mangling(__var)
 '''
 
-class Foam(NodeMixin):
+class Node_C(NodeMixin):
     """
     Class to define nodes of the tree
 
@@ -26,7 +26,7 @@ class Foam(NodeMixin):
 
     def __init__(self, name: str, parent = None, children: [] = None, *args: Key_C):
 
-        super(Foam, self).__init__()
+        super(Node_C, self).__init__()
         # self._privateDict = kwargs
         self.name = name
 
@@ -90,7 +90,7 @@ class Foam(NodeMixin):
         self.parent = node
     
     def __repr__(self):
-        res_str = f"Foam("
+        res_str = f"Node_C("
         for key, val in self.__dict__.items():
             res_str = res_str + f"{key} : {val}, "
         res_str = res_str + ")"

@@ -1,4 +1,4 @@
-from pyvnt.Container.node import Foam
+from pyvnt.Container.node import Node_C
 from pyvnt.Container.key import Key_C
 
 # Function no longer needed
@@ -19,7 +19,7 @@ def obj_constructor(name: str, parent = None, children: [] = None, *args):
     if children != None and tmp != []:
         raise Exception("Both children and args cannot be given at the same time")
     elif tmp == [] and children == None:
-        return Foam(name, parent, children)
+        return Node_C(name, parent, children)
     elif children == None:
         return Key_C(name, parent, *args)
     else:

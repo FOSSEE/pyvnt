@@ -12,9 +12,9 @@ class TestNode:
         self.key1 = Key_C('solver', self.eprop1, self.eprop2)
         self.key2 = Key_C('solver2', self.eprop2, self.eprop1)
 
-        self.head = Foam("test_head", None, None)
-        self.chld1 = Foam("test_child", self.head, None, self.key2)
-        self.chld2 = Foam("test_child2", None, None)
+        self.head = Node_C("test_head", None, None)
+        self.chld1 = Node_C("test_child", self.head, None, self.key2)
+        self.chld2 = Node_C("test_child2", None, None)
     
     def teardown_method(self, method):
         del self.head
@@ -25,7 +25,7 @@ class TestNode:
     
     @pytest.mark.skip(reason = 'Complex to test')
     def test_node_print(self):
-        assert str(self.head) == f"Foam(name : test_head, parent : None, children : ({self.chld1}, {self.chld2}, ), data : ({self.key1}, ), )"
+        assert str(self.head) == f"Node_C(name : test_head, parent : None, children : ({self.chld1}, {self.chld2}, ), data : ({self.key1}, ), )"
 
     def test_node_add_child(self):
         self.head.add_child(self.chld2)

@@ -46,7 +46,7 @@ There are different classes in the package for different kinds of data in OpenFO
 
 - `Key_C` class is used to store keys for the OpenFOAM distionary data types
 
-- `Foam` class is used to represent the OpenFOAM dictionary data type.
+- `Node_C` class is used to represent the OpenFOAM dictionary data type.
 
 Here is a detailed comparisions of a OpenFOAM dictionary and a pyvnt Node tree: 
 
@@ -74,8 +74,8 @@ solvers
     </td>
     <td>
 <pre>
-solvers(Foam)
-└── p(Foam)
+solvers(Node_C)
+└── p(Node_C)
     {   
        solver(Key_C) : PCG(Enm_P), BNR(Enm_P)
        preconditioner(Key_C) : DIC(Enm_P), 
@@ -87,7 +87,7 @@ solvers(Foam)
  </tr>
 </table>
 
-As shown above, the `Foam` and `Key_C` classes are used to represent the basic elements of the OpenFOAM Dictionary data structure. While the `Value_P` classe and its children classes are used to represent the basic property values in OpenFOAM. 
+As shown above, the `Node_C` and `Key_C` classes are used to represent the basic elements of the OpenFOAM Dictionary data structure. While the `Value_P` classe and its children classes are used to represent the basic property values in OpenFOAM. 
 
 ## Sample Use Case
 
@@ -146,27 +146,27 @@ Here is how a sample code would look like that would build this file inside pyvn
 
 from pyvnt import *
 
-head = Foam('fvSolutions')
+head = Node_C('fvSolutions')
 
-sl = Foam('solvers', parent = head)
+sl = Node_C('solvers', parent = head)
 
 s = Key_C('solver', Enm_P('val1', items={'PCG', 'PBiCG', 'PBiCGStab'}, default='PCG'))
 pc = Key_C('preconditioner', Enm_P('val1', items={'DIC', 'DILU', 'FDIC'}, default='DIC'))
 tol = Key_C('tolerance', Flt_P('val1', minimum=0, maximum=1000, default=1e-06))
 rt = Key_C('relTol', Flt_P('val1', minimum=0, maximum=100, default=0.05))
 
-p = Foam('p', sl, None, pc, s,  tol, rt)
+p = Node_C('p', sl, None, pc, s,  tol, rt)
 
 relTol2 = Key_C('relTol', Flt_P('val1', minimum=0, maximum=100, default=0))
 
-pf = Foam('pFinal', sl, None, relTol2)
+pf = Node_C('pFinal', sl, None, relTol2)
 
 sol2 = Key_C('solver', Enm_P('val1', items={'smoothSolver'}, default='smoothSolver'))
 sm = Key_C('smoother', Enm_P('val1', items={'symGaussSeidel', 'gaussSeidel'}, default = 'symGaussSeidel'))
 tol2 = Key_C('tolerance', Flt_P('val1', minimum=0, maximum=1000, default=1e-05))
 relTol3 = Key_C('relTol', Flt_P('val1', minimum=0, maximum=100, default=0))
 
-u = Foam('U', sl, None, sol2, sm,
+u = Node_C('U', sl, None, sol2, sm,
          tol2, relTol3)
 
 ncorr = Key_C('nCorrectors', Int_P('int_prop_1', minimum=0, maximum=100, default=2))
@@ -175,7 +175,7 @@ prc = Key_C('pRefCell', Int_P('int_prop_3', minimum=0, maximum=100, default=0))
 prv = Key_C('pRefValue', Int_P('int_prop_4', minimum=0, maximum=100, default=0))
 
 
-piso = Foam('PISO', head, None, ncorr,
+piso = Node_C('PISO', head, None, ncorr,
            nnoc, prc, prv)
 
 show_tree(head)

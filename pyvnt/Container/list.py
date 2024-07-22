@@ -1,5 +1,5 @@
 from pyvnt.Reference.basic import *
-from pyvnt.Container.node import Foam
+from pyvnt.Container.node import Node_C
 from anytree import Node, RenderTree, AsciiStyle, NodeMixin
 from pyvnt.Reference.error_classes import SizeError, NoPlaceholdersError, NoValueError, KeyRepeatError
 from pyvnt.utils.make_indent import make_indent
@@ -39,14 +39,14 @@ class List_CP(Value_P, NodeMixin):
 
     __slots__ = ['_Value_P__name', '_List_CP__values', '_List_CP__isNode']
 
-    def __init__(self, name: int, size: int = None, values: [Foam] = [], elems: [[Value_P]] = [], default: Value_P = None, isNode: bool = False, parent: Foam = None):
+    def __init__(self, name: int, size: int = None, values: [Node_C] = [], elems: [[Value_P]] = [], default: Value_P = None, isNode: bool = False, parent: Node_C = None):
         super(List_CP, self).__init__()
         self.__isNode = isNode
 
         if not self.__isNode:
             self.set_properties(name, size, elems, default) # TODO: Change the method such that the class takes inputs in elements and the class stores list of elements when not acting as a node.
         else:
-            self.check_type(values = values) # All values needs to be of the type Foam as the values are all the children nodes
+            self.check_type(values = values) # All values needs to be of the type Node_C as the values are all the children nodes
             self.name = name
             self.__values = []
             self.data = []
@@ -73,8 +73,8 @@ class List_CP(Value_P, NodeMixin):
         '''
         if value:
             if self.__isNode:
-                if not isinstance(value, Foam):
-                    raise TypeError("Value should be of type Foam")
+                if not isinstance(value, Node_C):
+                    raise TypeError("Value should be of type Node_C")
                 else:
                     pass
             else:
@@ -85,8 +85,8 @@ class List_CP(Value_P, NodeMixin):
         elif elems:
             if self.__isNode:
                 for v in elems:
-                    if not all(isinstance(i, Foam) for i in v):
-                        raise TypeError("All values should be of type Foam")
+                    if not all(isinstance(i, Node_C) for i in v):
+                        raise TypeError("All values should be of type Node_C")
                     else:
                         pass
             else:
@@ -97,8 +97,8 @@ class List_CP(Value_P, NodeMixin):
                         pass
         elif values:
             if self.__isNode:
-                if not all(isinstance(i, Foam) for i in values):
-                    raise TypeError("All values should be of type Foam")
+                if not all(isinstance(i, Node_C) for i in values):
+                    raise TypeError("All values should be of type Node_C")
                 else:
                     pass
             else:
