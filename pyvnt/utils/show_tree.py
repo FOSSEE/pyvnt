@@ -1,12 +1,12 @@
 from anytree import Node, RenderTree, AsciiStyle, NodeMixin
-from pyvnt.Container.node import Foam
+from pyvnt.Container.node import Node_C
 
-def show_tree(head: Foam):
+def show_tree(head: Node_C):
     '''
     Function to output the entire tree in the terminal starting from the current node object
 
     Parameters:
-        head: Head Node of the tree to be printed. Must be of typpe `Foam`
+        head: Head Node of the tree to be printed. Must be of typpe `Node_C`
     
     Returns: 
         None
