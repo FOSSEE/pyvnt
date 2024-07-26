@@ -174,6 +174,18 @@ class Key_C(Key_Parent):
                     res = res + ", "
         
         return res
+
+    def get_items(self):
+        '''
+        Function to get all the items stored in the object
+        '''
+        return self._privateDict.items()
+    
+    def get_keys(self):
+        '''
+        Function to get all the keys stored in the object
+        '''
+        return self._privateDict.keys()
     
     def write_out(self, file, indent = 0):
         '''

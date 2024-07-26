@@ -79,6 +79,15 @@ class Node_C(NodeMixin):
         '''
         self.children += (node, )
     
+    def get_data(self):
+        '''
+        Function to get the attributes of the current node
+
+        Parameter:
+            None
+        '''
+        return self.data
+    
 
     def set_Parent(self, node):
         '''
