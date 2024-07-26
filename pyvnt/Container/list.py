@@ -254,6 +254,12 @@ class List_CP(Value_P, NodeMixin):
             s = s + len(elem)
         return s
     
+    def is_a_node(self):
+        '''
+        Returns if the list is a list of nodes.
+        '''
+        return self.__isNode
+    
     def give_val(self):
         '''
         Returns the list.
@@ -266,6 +272,12 @@ class List_CP(Value_P, NodeMixin):
 
         print(res)
         return res
+    
+    def get_elems(self):
+        '''
+        Returns the elements of the list.
+        '''
+        return self.__values
         
     def check_similar_data(self):
         '''
