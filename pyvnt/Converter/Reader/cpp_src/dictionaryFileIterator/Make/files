@@ -1,0 +1,3 @@
+dictionaryFileIterator.C
+
+LIB = ./lib/dictionaryFileIterator
