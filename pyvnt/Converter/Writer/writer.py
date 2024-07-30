@@ -68,12 +68,15 @@ def write_out(obj, file, indent = 0, list_in_key = False):
 
         make_indent(file, indent)
 
-        if len(obj.get_keys()) == 1 and type(list(obj.get_items())[0]) == List_CP:
+        if len(list(obj.get_keys())) == 1 and type(list(obj.get_items())[0][1]) == List_CP:
             file.write(f"{obj.name}\n")
             for key, val in obj.get_items():
                 write_out(val, file, indent, True)
         else:
-            file.write(f"{obj.name.ljust(col_width)}")
+            if len(obj.name) >= col_width:
+                file.write(f"{obj.name} ")
+            else:
+                file.write(f"{obj.name.ljust(col_width)}")
             for key, val in obj.get_items():
                 write_out(val, file)
                 if key != last_elem:
@@ -116,8 +119,11 @@ def write_out(obj, file, indent = 0, list_in_key = False):
             res += ")"
             file.write(res)
     
-    elif type(obj) == Int_P or type(obj) == Flt_P or type(obj) ==  Enm_P or type(obj) == Vector_P or type(obj) == Tensor_P or type(obj) == Dim_Set_P : # If object is a property
+    elif type(obj) == Int_P or type(obj) == Flt_P or type(obj) ==  Enm_P or type(obj) == Vector_P or type(obj) == Tensor_P : # If object is a property
         file.write(f"{obj.give_val()}")
+    
+    elif type(obj) == Dim_Set_P: # special case for dimension set
+        file.write(" ".join(i for i in str(obj.give_val()).split(",")))
     
     else:
         raise ValueError(f"Object of type {type(obj)} not supported for writing out to file")
