@@ -39,7 +39,7 @@ class List_CP(Value_P, NodeMixin):
 
     __slots__ = ['_Value_P__name', '_List_CP__values', '_List_CP__isNode']
 
-    def __init__(self, name: int, size: int = None, values: [Node_C] = [], elems: [[Value_P]] = [], default: Value_P = None, isNode: bool = False, parent: Node_C = None):
+    def __init__(self, name: int, size: int = None, values: [Node_C] = [], elems: [[Value_P]] = [[]], default: Value_P = None, isNode: bool = False, parent: Node_C = None):
         super(List_CP, self).__init__()
         self.__isNode = isNode
 
@@ -51,9 +51,7 @@ class List_CP(Value_P, NodeMixin):
             self.__values = []
             self.data = []
 
-            if not parent:
-                raise NoValueError("No parent given for node")
-            else:
+            if parent:
                 self.parent = parent
 
             self.children = values
@@ -118,7 +116,8 @@ class List_CP(Value_P, NodeMixin):
         '''
         self._Value_P__name = name
 
-        self.check_type(elems = values)
+        if values != [[]]:
+            self.check_type(elems = values)
         
         if size and values != []:
             '''
@@ -270,7 +269,6 @@ class List_CP(Value_P, NodeMixin):
             for val in elem:
                 res = res + (val.give_val(),)
 
-        print(res)
         return res
     
     def get_elems(self):
