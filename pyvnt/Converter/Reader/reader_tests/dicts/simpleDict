@@ -1,0 +1,17 @@
+
+
+key1            25;
+
+key2            35.8 67;
+
+key3            value1;
+
+key4
+{
+    key41           value1;
+}
+
+
+
+
+

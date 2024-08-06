@@ -1,11 +1,11 @@
 
 import os
-from pyvnt.DictionaryElement.foamDS import Foam
+from pyvnt.Container.node import Node_C
 from .dictionaryFileIterator import DictionaryFileIterator
 from .dictionaryFile import DictionaryFile
 
 
-def read(filepath : str, verifyFile: bool = True) -> Foam:
+def read(filepath : str, verifyFile: bool = True) -> Node_C:
   '''
   Reads dictionary file from the given filepath and returns a node tree 
   representation of it.
@@ -19,7 +19,7 @@ def read(filepath : str, verifyFile: bool = True) -> Foam:
   return root
 
 
-def _createTree(parentName: str, itr: DictionaryFileIterator) -> Foam:
+def _createTree(parentName: str, itr: DictionaryFileIterator) -> Node_C:
   '''
   Recursively traverse the openfoam's dictionary data structure and create the
   node-tree structure.
@@ -40,14 +40,14 @@ def _createTree(parentName: str, itr: DictionaryFileIterator) -> Foam:
     itr.step()
 
   # create node
-  children = [val for val in data.values() if isinstance(val,Foam)]
+  children = [val for val in data.values() if isinstance(val,Node_C)]
   
   for key in list(data.keys()):
     val = data[key]
-    if isinstance(val,Foam):
+    if isinstance(val,Node_C):
       del data[key]
 
-  node = Foam(parentName, children=children, *data.values())
+  node = Node_C(parentName, children=children, *data.values())
 
   return node
 

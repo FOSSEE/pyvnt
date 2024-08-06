@@ -1,11 +1,11 @@
 
 from enum import Enum
 from pyvnt import (
-  KeyData, 
-  PropertyInt, 
-  PropertyFloat, 
-  PropertyString, 
-  ValueProperty
+  Key_C, 
+  Int_P, 
+  Flt_P, 
+  Str_P, 
+  Value_P
 )
 
 from .exceptions import (
@@ -150,9 +150,9 @@ class DictionaryFileIterator:
 
     return DictionaryFileIteratorLib.isCurrentEntryDict(self.__iteratorPtr)
 
-  def getValues(self) -> list[ValueProperty]:
+  def getValues(self) -> list[Value_P]:
     '''
-    Returns a list of 'ValueProperty' objects for the values in current entry.
+    Returns a list of 'Value_P' objects for the values in current entry.
     Raises an error if iterator is out of range.
     Raises an error if current entry is not primitive entry.
     '''
@@ -191,9 +191,9 @@ class DictionaryFileIterator:
     self.__checkValidity()
     return [val.giveVal() for val in self.getValues()]
 
-  def getKeyData(self) -> KeyData:
+  def getKeyData(self) -> Key_C:
     '''
-    Returns 'KeyData' object for the current entry.
+    Returns 'Key_C' object for the current entry.
     Raises an error if iterator is out of range.
     Raises an error if current entry is not primitive entry.
     '''
@@ -207,7 +207,7 @@ class DictionaryFileIterator:
 
     key = self.getCurrentEntryKeyword()
     values = self.getValues()
-    return KeyData(key, *values)
+    return Key_C(key, *values)
 
   def __getCurrentEntryValueCount(self) -> int:
     '''
@@ -314,22 +314,22 @@ class DictionaryFileIterator:
 
     return value
 
-  def __getValuePropertyAt(self, index : int) -> ValueProperty:
+  def __getValuePropertyAt(self, index : int) -> Value_P:
     '''
-    Returns a ValueProperty object for value at the given index.
+    Returns a Value_P object for value at the given index.
     '''
     valType = self.__getCurrentEntryValueTypeAt(index)
     val = self.__getValueAt(index, valType)
 
     if valType == ValueType.INTEGER:
-      return PropertyInt(f'val{index+1}', val, INT_MIN, INT_MAX)
+      return Int_P(f'val{index+1}', val, INT_MIN, INT_MAX)
 
     if valType == ValueType.FLOAT or \
         valType == ValueType.DOUBLE or \
         valType == ValueType.LONG_DOUBLE:
-      return PropertyFloat(f'val{index+1}', val, float('-inf'), float('inf'))
+      return Flt_P(f'val{index+1}', val, float('-inf'), float('inf'))
 
     if valType == ValueType.STRING:
-      return PropertyString(f'val{index+1}', val)
+      return Str_P(f'val{index+1}', val)
 
-    return PropertyString(f'val{index+1}', 'Invalid')
+    return Str_P(f'val{index+1}', 'Invalid')
