@@ -5,6 +5,7 @@ from pyvnt import (
   Int_P, 
   Flt_P, 
   Str_P, 
+  Enm_P,
   Value_P
 )
 
@@ -135,6 +136,7 @@ class DictionaryFileIterator:
       DictionaryFileIteratorLib.getCurrentEntryKeyword(self.__iteratorPtr), 
       CODEC
     )
+
     return keyword
 
   def isCurrentEntryDict(self) -> bool:
@@ -330,6 +332,6 @@ class DictionaryFileIterator:
       return Flt_P(f'val{index+1}', val, float('-inf'), float('inf'))
 
     if valType == ValueType.STRING:
-      return Str_P(f'val{index+1}', val)
+      return Enm_P(f'val{index+1}', {val}, val)
 
     return Str_P(f'val{index+1}', 'Invalid')

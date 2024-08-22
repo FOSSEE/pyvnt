@@ -12,7 +12,13 @@ def read(filepath : str, verifyFile: bool = True) -> Node_C:
   '''  
   file = DictionaryFile(filepath, verifyFile)
   itr = DictionaryFileIterator(file)
-  root = _createTree(file.filepath, itr)
+
+  path = file.filepath
+
+  root_name = path.split('/')[-1]
+  # print(root_name)
+
+  root = _createTree(root_name, itr)
   itr.close()
   file.close()
 
@@ -36,18 +42,21 @@ def _createTree(parentName: str, itr: DictionaryFileIterator) -> Node_C:
     else:
       value = itr.getKeyData()
 
+    # print(f"{key}, {type(value)}")
     data[key] = value
     itr.step()
 
   # create node
-  children = [val for val in data.values() if isinstance(val,Node_C)]
-  
-  for key in list(data.keys()):
-    val = data[key]
-    if isinstance(val,Node_C):
-      del data[key]
+  children = [] 
+  itms = []
 
-  node = Node_C(parentName, children=children, *data.values())
+  for key, val in data.items():
+    if isinstance(val,Node_C):
+      children.append(val)
+    else:
+      itms.append(val)
+
+  node = Node_C(parentName, None, children, *itms)
 
   return node
 
