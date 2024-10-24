@@ -69,6 +69,12 @@ bool isCurrentEntryDict(void* dictFileItr)
   return itr->isCurrentEntryDict();
 }
 
+bool isCurrentEntryList(void* dictFileItr)
+{
+  DictionaryFileIterator* itr = toDictionaryFileIteratorPtr(dictFileItr);
+  return itr->isCurrentEntryList();
+}
+
 int getCurrentEntryValueCount(void* dictFileItr)
 {
   DictionaryFileIterator* itr = toDictionaryFileIteratorPtr(dictFileItr);
@@ -255,6 +261,21 @@ bool DictionaryFileIterator::isCurrentEntryDict()
   return currIter().isDict();
 }
 
+bool DictionaryFileIterator::isCurrentEntryList()
+{
+  if( mDictStack.empty() )
+    return false;
+
+  dictInfo& top = mDictStack.top();
+  Foam::dictionary* currDictPtr = top.first;
+  Foam::dictionary::iterator& currIter = top.second;
+
+  if( currIter == currDictPtr->end() )
+    return false;
+
+  return currIter().isDict();
+}
+
 int DictionaryFileIterator::getCurrentEntryValueCount()
 {
   if( mDictStack.empty() )
@@ -287,7 +308,7 @@ int DictionaryFileIterator::getCurrentEntryValueTypeAt(int index)
     case Foam::token::tokenType::STRING:
       type = STRING;
       break;
-
+ 
     case Foam::token::tokenType::VERBATIMSTRING:
       type = STRING;
       break;
@@ -369,6 +390,6 @@ double DictionaryFileIterator::getCurrentEntryValueAt_Double(int index)
 long double DictionaryFileIterator::getCurrentEntryValueAt_LongDouble(int index)
 {
   const Foam::token& tkn = getCurrentEntryTokenAt(index);
-  return tkn.longDoubleScalarToken();
+  return tkn.doubleScalarToken();
 }
 

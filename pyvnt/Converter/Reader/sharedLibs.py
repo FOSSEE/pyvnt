@@ -54,6 +54,7 @@ class DictionaryFileIteratorLib:
   stepOut = _lib.stepOut
   getCurrentEntryKeyword = _lib.getCurrentEntryKeyword
   isCurrentEntryDict = _lib.isCurrentEntryDict
+  isCurrentEntryList = _lib.isCurrentEntryList
   getCurrentEntryValueCount = _lib.getCurrentEntryValueCount
   getCurrentEntryValueTypeAt = _lib.getCurrentEntryValueTypeAt
   getCurrentEntryValueAt_String = _lib.getCurrentEntryValueAt_String
@@ -87,6 +88,9 @@ DictionaryFileIteratorLib.getCurrentEntryKeyword.restype = ctypes.c_char_p
 
 DictionaryFileIteratorLib.isCurrentEntryDict.argtypes = [ctypes.c_void_p]
 DictionaryFileIteratorLib.isCurrentEntryDict.restype = ctypes.c_bool
+
+DictionaryFileIteratorLib.isCurrentEntryList.argtypes = [ctypes.c_void_p]
+DictionaryFileIteratorLib.isCurrentEntryList.restype = ctypes.c_bool
 
 
 DictionaryFileIteratorLib.getCurrentEntryValueCount.argtypes = [

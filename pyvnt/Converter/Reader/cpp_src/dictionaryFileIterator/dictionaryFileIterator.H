@@ -19,6 +19,7 @@ public:
 
   const char* getCurrentEntryKeyword();
   bool isCurrentEntryDict();
+  bool isCurrentEntryList();
   int getCurrentEntryValueCount();
   int getCurrentEntryValueTypeAt(int index);
 

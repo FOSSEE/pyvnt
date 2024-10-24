@@ -6,11 +6,24 @@ key2            35.8 67;
 
 key3            value1;
 
+// key5
+// (
+//     key30
+//     {
+//         key31       value1;
+//         key32       value2;
+//     }
+// );
+
+key6
+(
+    value3 , value4 , value5
+);
+
 key4
 {
     key41           value1;
 }
-
 
 
 

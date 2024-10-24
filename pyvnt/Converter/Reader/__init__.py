@@ -35,13 +35,18 @@ def _createTree(parentName: str, itr: DictionaryFileIterator) -> Node_C:
     key = itr.getCurrentEntryKeyword()
     value = None
 
+    # print(f"{key}, {itr.isCurrentEntryList()}")
+
     if itr.isCurrentEntryDict():
+      # print(key)
       itr.stepIn()
       value = _createTree(key, itr)
       itr.stepOut()
     else:
       value = itr.getKeyData()
+      # print(value)
 
+    print(key)
     # print(f"{key}, {type(value)}")
     data[key] = value
     itr.step()

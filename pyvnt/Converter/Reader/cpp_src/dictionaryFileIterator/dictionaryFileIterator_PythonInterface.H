@@ -22,6 +22,7 @@ bool stepOut(void* dictFileItr);
 
 const char* getCurrentEntryKeyword(void* dictFileItr);
 bool isCurrentEntryDict(void* dictFileItr);
+bool isCurrentEntryList(void* dictFileItr);
 int getCurrentEntryValueCount(void* dictFileItr);
 int getCurrentEntryValueTypeAt(void* dictFileItr, int index);
 

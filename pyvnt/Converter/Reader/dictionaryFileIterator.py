@@ -6,6 +6,8 @@ from pyvnt import (
   Flt_P, 
   Str_P, 
   Enm_P,
+  Dim_Set_P,
+  List_CP,
   Value_P
 )
 
@@ -151,6 +153,19 @@ class DictionaryFileIterator:
       raise IteratorOutOfRange
 
     return DictionaryFileIteratorLib.isCurrentEntryDict(self.__iteratorPtr)
+  
+  def isCurrentEntryList(self) -> bool:
+    '''
+    Checks if current entry is a 'list entry' or a 'primitive entry(non 
+    dictionary entry).'
+    Raises an error if iterator is out of range.
+    '''
+    self.__checkValidity()
+
+    if not self.hasEntry():
+      raise IteratorOutOfRange
+
+    return DictionaryFileIteratorLib.isCurrentEntryList(self.__iteratorPtr)
 
   def getValues(self) -> list[Value_P]:
     '''
@@ -174,15 +189,24 @@ class DictionaryFileIterator:
         stack.append([])
       elif val == ')':
         popped = stack.pop()
-        # stack[len(stack)-1].append(popped)
+        prop = List_CP(f'val{index+1}', elems=[popped])
+        stack[-1].append(prop)
       elif val == ']':
         popped = tuple(stack.pop())
-        # stack[len(stack)-1].append(popped)
+        prop = Dim_Set_P(f'val{index+1}', popped)
+        stack[-1].append(prop)
+      # elif val == '{':
+      #   stack.append([]) # TODO: Figure out to iterate thtough dictionaries nested inside a list
+      # elif val == '}':
+      #   popped = tuple(stack.pop())
+      #   prop = Enm_P(f'val{index+1}', popped)
+      #   stack[-1].append(prop)
       elif val == ',':
         pass
       else:
         prop = self.__getValuePropertyAt(index)
-        stack[len(stack)-1].append(prop)
+        stack[-1].append(prop)
+    # print(stack)
 
     return stack[0]
 
@@ -209,6 +233,8 @@ class DictionaryFileIterator:
 
     key = self.getCurrentEntryKeyword()
     values = self.getValues()
+    
+    # print(f"key: {key}, values: {values}")
     return Key_C(key, *values)
 
   def __getCurrentEntryValueCount(self) -> int:
@@ -305,6 +331,7 @@ class DictionaryFileIterator:
       value = self.__getCurrentEntryValueAt_String(index)
     elif valType == ValueType.PUNCTUATION:
       value = self.__getCurrentEntryValueAt_Character(index)
+      # print(f"Punctuation 1 here: {value}")
     elif valType == ValueType.INTEGER:
       value = self.__getCurrentEntryValueAt_Integer(index)
     elif valType == ValueType.FLOAT:
@@ -313,6 +340,8 @@ class DictionaryFileIterator:
       value = self.__getCurrentEntryValueAt_Double(index)
     elif valType == ValueType.LONG_DOUBLE:
       value = self.__getCurrentEntryValueAt_LongDouble(index)
+    
+    # print(value)
 
     return value
 
