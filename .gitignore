@@ -6,6 +6,9 @@ pyvnt.egg-info
 manual_tests/
 manual_debug/
 
+linux64GccDPInt32Opt/
+bin/
+
 **/__pycache__/*
 .vscode
 pyrightconfig.json
@@ -20,6 +23,8 @@ __pycache__/
 
 # C extensions
 *.so
+*.dep
+*.o
 
 # Distribution / packaging
 .Python

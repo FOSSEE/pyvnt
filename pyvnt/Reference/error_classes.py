@@ -106,4 +106,11 @@ class IncorrectLengthError(Exception):
     def __str__(self):
         return f"Length of values should be 7. Length of given list is {self.length}"
 
+class VersionError(Exception):
+    def __init__(self, version: str):
+        self.version = version
+
+    def __str__(self):
+        return f"Version {self.version} does not match supported version"
+
 

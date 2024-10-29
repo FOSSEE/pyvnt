@@ -1,0 +1,9 @@
+key1            25;
+key2            35.8 67;
+key3            value1;
+key6            ( value3 value4 value5 );
+key4
+{
+	key41           value1;
+}
+

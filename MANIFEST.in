@@ -1,0 +1,4 @@
+include pyvnt/Converter/Reader/cpp_src/dictionaryFile/lib/dictionaryFile.so
+include pyvnt/Converter/Reader/cpp_src/dictionaryFileChecker/bin/dictionaryFileChecker.so
+include pyvnt/Converter/Reader/cpp_src/dictionaryFileIterator/lib/dictionaryFileIterator.so
+include pyvnt/Converter/Reader/cpp_src/libOpenFOAM.so

@@ -1,0 +1,44 @@
+
+
+key1            25;
+
+key2            35.8 67;
+
+key3            value1;
+
+<<<<<<< HEAD
+<<<<<<< HEAD
+// key5
+// (
+//     key30
+//     {
+//         key31       value1;
+//         key32       value2;
+//     }
+// );
+
+key6
+(
+    value3 , value4 , value5
+);
+
+=======
+>>>>>>> acb2eb0 (fixed merge conflict)
+=======
+>>>>>>> 2a673f5 (fixed merge conflict)
+key4
+{
+    key41           value1;
+}
+
+
+
+
+<<<<<<< HEAD
+<<<<<<< HEAD
+=======
+
+>>>>>>> acb2eb0 (fixed merge conflict)
+=======
+
+>>>>>>> 2a673f5 (fixed merge conflict)

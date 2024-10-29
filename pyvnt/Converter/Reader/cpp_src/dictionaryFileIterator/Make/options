@@ -1,0 +1,7 @@
+
+EXE_INC = \
+  -I../dictionaryFile
+
+LIB_LIBS = \
+  -L$FOAM_LIBBIN \
+  -lOpenFOAM

@@ -22,7 +22,7 @@ def writeTo(root, path):
     '''
     file_name = root.name
 
-    ptt = r".txt$"
+    ptt = r"$.txt"
     if re.search(ptt, file_name):
         raise ValueError("File name cannot have .txt extension")
 

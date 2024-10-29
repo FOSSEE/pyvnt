@@ -1,0 +1,37 @@
+
+
+key1            word1;
+
+key2            word1 word2 word3;
+
+key3            "string1" word2;
+
+key4            12 -35;
+
+key5            1.23 1e+24 1e-05 1e-25 1e+25;
+
+key6            ( 4, 2, 5 );
+
+key8            [ 0, 1, 0, 0, 0, 0, 0 ];   
+
+key9
+{
+    key1            value1;
+    key2            value2;
+    key3
+    {
+        key1            value1;
+        key2
+        {
+            key1            value1;
+            key2            value2;
+        }
+    }
+}
+
+key10
+{
+}
+
+key11           ((1,2,3),(4,5,6),(7,8,9));
+
