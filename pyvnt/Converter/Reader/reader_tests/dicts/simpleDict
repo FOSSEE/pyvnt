@@ -7,6 +7,7 @@ key2            35.8 67;
 key3            value1;
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 // key5
 // (
 //     key30
@@ -23,6 +24,8 @@ key6
 
 =======
 >>>>>>> acb2eb0 (fixed merge conflict)
+=======
+>>>>>>> 2a673f5 (fixed merge conflict)
 key4
 {
     key41           value1;
@@ -32,6 +35,10 @@ key4
 
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 
 >>>>>>> acb2eb0 (fixed merge conflict)
+=======
+
+>>>>>>> 2a673f5 (fixed merge conflict)
