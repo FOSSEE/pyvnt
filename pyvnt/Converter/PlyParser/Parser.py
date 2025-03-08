@@ -1,4 +1,3 @@
-
 import ply.lex as lex
 import ply.yacc as yacc
 from pyvnt import *
@@ -17,7 +16,10 @@ tokens = (
             'COMMA',
             'LPAREN',
             'RPAREN',
-            'COORDINATE')
+            'COORDINATE',
+            'LSQUABRAC',
+            'RSQUABRAC'
+            )
 
 t_LBRACE = r'\{'
 t_RBRACE = r'\}'
@@ -26,8 +28,10 @@ t_DOLLAR = r'\$'
 t_COMMA = r','
 t_LPAREN=r'\('
 t_RPAREN=r'\)'
+t_LSQUABRAC=r'\['
+t_RSQUABRAC=r'\]'
 
-t_ignore = ' \t\n'
+t_ignore = ' \t\n,'
 
 def t_comm(t):
     r'/\*(.|\n)*?\*/'
@@ -48,6 +52,12 @@ def t_NUMBER(t):
     t.value = float(t.value) if '.' in t.value or 'e' in t.value else int(t.value)
     return t
 
+def t_COORDINATE(t):
+    r'\(\s*-?\d+(\.\d+)?(e[-+]?\d+)?\s+-?\d+(\.\d+)?(e[-+]?\d+)?\s+-?\d+(\.\d+)?(e[-+]?\d+)?\s*\)'
+    # Process the coordinate into a tuple of numbers
+    coords = t.value.strip('()').split()
+    t.value = tuple(float(x) if '.' in x or 'e' in x else int(x) for x in coords)
+    return t
 
 def t_error(t):
     print(f"Illegal character '{t.value[0]}'")
@@ -60,30 +70,143 @@ lexer = lex.lex()
 # Parsing rules
 
 
+# def p_file(p):
+#     '''file : blocks'''
+#     p[0]=Node_C("file",None,children=p[1])
+#     print(p[0])
+
+
+
 def p_file(p):
     '''file : blocks'''
-    p[0] = p[1]
-    #print(str(lexer.lineno)+"--=================-------")
+    p[0] = Node_C("file", None, children=p[1][0])
+    for data in p[1][1]:
+        p[0].add_data(data)
+    #print(p[0])
+
 
 def p_blocks(p):
     '''blocks : blocks block
-              | block'''
-    p[0] = {**p[1] , **p[2]} if len(p) == 3 else p[1]
+               | block'''
+    
+    if len(p) == 3:
+        if p[2][0]:
+            p[1][0].append(p[2][0])
+        if p[2][1]:
+            p[1][1].append(p[2][1])
+        p[0] = p[1]
+        #print(p[2])
+    else:
+        p[0] = [[], []]
+        if p[1][0]:
+            p[0][0].append(p[1][0])
+        if p[1][1]:
+            p[0][1].append(p[1][1])
+    #print(p[0])
+    
 
 def p_block(p):
-    '''block : WORD LBRACE statements RBRACE
-             | WORD WORD SEMICOLON
-             | WORD NUMBER SEMICOLON
+    '''block : WORD dimension
+             | WORD dictbody
              | WORD list_block
     '''
-    if len(p) == 5:
-        p[0] = {p[1]: p[3]}
-    elif len(p) == 4:
-        p[0] = {p[1]: p[2]}
-    elif len(p) == 3:
-        p[0] = {p[1]: p[2]}
+
+    #print(p[2])
+
+    p[0] = [None, None]
+    
+    # Check if second element is Dim_Set_P (dimension)
+    if len(p) == 3 and isinstance(p[2], Dim_Set_P):
+        p[0][1] = Key_C("Dimension", p[2])
+    else:
+        # Create a new node with the word as name
+        node = Node_C(p[1])
+        
+        # Process the dictbody or list_block
+        if len(p) >= 3:
+            # Handle node children (Node_C objects)
+            if isinstance(p[2][0], Node_C):
+                for child in p[2]:
+                    node.add_child(child)
+            # Handle node data (Key_C objects)
+            elif isinstance(p[2][0], Key_C):
+                #print(p[2])
+                for data in p[2]:
+                    node.add_data(data)
+            elif isinstance(p[2][0],list):
+                for pair in p[2]:
+                    for element in pair:
+                        if isinstance(element, Node_C):
+                            node.add_child(element)
+                        elif isinstance(element, Key_C):
+                            #print(p[2])
+                            node.add_data(element)
+
+
+        #print(node)
+        p[0][0] = node
+
+def p_dictionaries(p):
+    '''dictionaries :
+    '''    
+
+def p_dimension(p):
+    '''
+    dimension : LSQUABRAC NUMBER NUMBER NUMBER NUMBER NUMBER NUMBER NUMBER RSQUABRAC SEMICOLON
+    '''
+    p[0]=Dim_Set_P("dim_set",p[2:9])
+
+def p_dictbody(p):
+    '''
+    dictbody : LBRACE statements RBRACE
+    '''
+    p[0]=p[2]
+    # print("statements ===========================")
+    # print(p[0])
+    
+
+def p_statements(p):
+    '''statements : statements statement
+                  | statement'''
+    if len(p) == 3:
+        p[0] = p[1]+[p[2]]
+    else: 
+        p[0] = [p[1]]
+    
+
     #print(p[0])
 
+def p_statement_word_word(p):
+    '''statement : WORD words SEMICOLON
+    '''
+    #print(f"Parsing WORD-WORD: {p[1]}, {p[2]}")
+    p[0]=Key_C(p[1],Enm_P(p[1],set(p[2]),p[2][0]))
+
+def p_statement_word_words(p):
+    '''words : words WORD
+            | WORD 
+    '''
+    if len(p)==3:
+        p[1].append(p[2])
+        p[0]=p[1]
+    else:
+        p[0] = [p[1]]
+
+def p_statement_word_number(p):
+    '''statement : WORD NUMBER SEMICOLON'''
+    p[0]=Key_C(p[1],Flt_P('val1', minimum=0, maximum=1000, default=p[2]))
+
+def p_statement_dollar_word(p):
+    '''statement : DOLLAR WORD SEMICOLON'''
+    p[0] = {"$": p[2]}
+
+def p_statement_block(p):
+    '''statement : block'''
+    p[0] = p[1]
+
+def p_statement_word_list(p):
+    '''statement : WORD value_list SEMICOLON'''
+    p[0] = {p[1]: p[2]}
 
 
 def p_list_block(p):
@@ -108,14 +231,6 @@ def p_list_items(p):
             p[0] = [p[1]]
     else:
         p[0] = []
-
-
-def t_COORDINATE(t):
-    r'\(\s*-?\d+(\.\d+)?(e[-+]?\d+)?\s+-?\d+(\.\d+)?(e[-+]?\d+)?\s+-?\d+(\.\d+)?(e[-+]?\d+)?\s*\)'
-    # Process the coordinate into a tuple of numbers
-    coords = t.value.strip('()').split()
-    t.value = tuple(float(x) if '.' in x or 'e' in x else int(x) for x in coords)
-    return t
 
 def p_list_item(p):
     '''list_item : COORDINATE
@@ -154,47 +269,6 @@ def p_empty(p):
     pass
 
 
-def p_statements(p):
-    '''statements : statements statement
-                  | statement
-                  | list_block'''
-    if len(p) == 3:
-        p[1].update(p[2])  # Merge statements
-        p[0] = p[1]
-    else:
-        p[0] = p[1]
-    #print(p[1])
-
-def p_statement_word_word(p):
-    '''statement : WORD words SEMICOLON
-    '''
-    p[0] = {p[1]: p[2]}
-
-def p_statement_word_words(p):
-    '''words : words WORD
-            | WORD 
-    '''
-    if len(p)==3:
-        p[1].append(p[2])
-        p[0]=p[1]
-    else:
-        p[0] = [p[1]]
-
-def p_statement_word_number(p):
-    '''statement : WORD NUMBER SEMICOLON'''
-    p[0] = {p[1]: p[2]}
-
-def p_statement_dollar_word(p):
-    '''statement : DOLLAR WORD SEMICOLON'''
-    p[0] = {"$": p[2]}
-
-def p_statement_block(p):
-    '''statement : block'''
-    p[0] = p[1]
-
-def p_statement_word_list(p):
-    '''statement : WORD value_list SEMICOLON'''
-    p[0] = {p[1]: p[2]}
 
 def p_value_list(p):
     '''value_list : value_list COMMA value_list
@@ -221,66 +295,13 @@ def parse_fvsolutions(text):
     return parser.parse(text, lexer=lexer)
 
 
+# Traverse through the folder
+for filename in os.listdir(folder_path):
+    file_path = os.path.join(folder_path, filename)
+    for file in os.listdir(file_path):
+        with open(os.path.join(file_path, file)) as tF:
+            text =tF.read()
+        tt=parse_fvsolutions(text)
+        #print(tt)
+        show_tree(tt)
 
-def build_tree(parent, data):
-    """ Recursively builds a Foam tree from parsed fvSolution data. """
-    for key, value in data.items():
-        if(key=='FoamFile' or key=='$'):
-            continue
-        if isinstance(value, dict):
-            node = Node_C(key, parent)
-            build_tree(node, value)
-            
-        else:
-            cam=None
-            print(value)
-            if isinstance(value,list):
-                cam=value[0]
-            else:
-                cam=value
-            prop = Key_C(key, Flt_P('val1', minimum=0, maximum=1000, default=value) 
-                           if isinstance(value, float) else
-                           Flt_P('val1', minimum=0, maximum=100, default=value) 
-                           if isinstance(value, int) else
-                           Enm_P('val1', items={cam}, default=cam))
-            #print(prop)  # Add property to the parent Foam node
-            parent.addData(prop)
-
-
-
-
-# parsed_data_fv = parse_fvsolutions(fvsolutions_text)
-# parsed_data_dic=parse_fvsolutions(control_dict_text)
-# parsed_data_sch=parse_fvsolutions(fvscheme_text)
-# parsed_data_block=parse_fvsolutions(blockmesh_dict)
-
-
-
-
-# complete_parse_data={parsed_data_dic['FoamFile']['object']:parsed_data_dic,parsed_data_fv['FoamFile']['object']:parsed_data_fv,parsed_data_sch['FoamFile']['object']:parsed_data_sch}
-# print (parsed_data_block)
-
-# showTree(head)
-
-
-
-
-
-# check=['p','U','transportProperties','blockMeshDict', 'controlDict', 'fvSchemes', 'fvSolution']
-
-# complete_parse_data={}
-
-
-# # Traverse through the folder
-# for filename in os.listdir(folder_path):
-#     file_path = os.path.join(folder_path, filename)
-#     for file in os.listdir(file_path):
-#         with open(os.path.join(file_path, file)) as tF:
-#             text =tF.read()
-#         complete_parse_data+={}
-#         print(parse_fvsolutions(text))
-#         print(file+"----------------------")
-
-
-# head = Node_C('Project')
-# build_tree(head,complete_parse_data)
