@@ -5,7 +5,6 @@ import os
 
 folder_path = "Demo_case_files/cavity"
 
-
 tokens = (
             'WORD', 
             'NUMBER',
@@ -30,33 +29,24 @@ t_RPAREN=r'\)'
 t_LSQUABRAC=r'\['
 t_RSQUABRAC=r'\]'
 
-t_ignore = ' \t\n,'
+t_ignore = ' \t\n,"'
 
 def t_comm(t):
     r'/\*(.|\n)*?\*/'
-    #t.lexer.lineno += t.value.count('\n')
     return None
 
 def t_comments(t):
     r'\//.*'
     pass
 
-
 def t_WORD(t):
-    r'[a-zA-Z_][a-zA-Z0-9_]*'
+    r'[a-zA-Z_][a-zA-Z0-9_]*(\(\s*([a-zA-Z_][a-zA-Z0-9_]*\s*(,\s*[a-zA-Z_][a-zA-Z0-9_]*)*)?\s*\))?'
     return t
 
 def t_NUMBER(t):
     r'-?\d+(\.\d+)?(e[-+]?\d+)?'
     t.value = float(t.value) if '.' in t.value or 'e' in t.value else int(t.value)
     return t
-
-# def t_COORDINATE(t):
-#     r'\(\s*-?\d+(\.\d+)?(e[-+]?\d+)?\s+-?\d+(\.\d+)?(e[-+]?\d+)?\s+-?\d+(\.\d+)?(e[-+]?\d+)?\s*\)'
-#     # Process the coordinate into a tuple of numbers
-#     coords = t.value.strip('()').split()
-#     t.value = tuple(float(x) if '.' in x or 'e' in x else int(x) for x in coords)
-#     return t
 
 def t_error(t):
     print(f"Illegal character '{t.value[0]}'")
@@ -70,11 +60,18 @@ lexer = lex.lex()
 
 def p_file(p):
     '''file : blocks'''
-    node= Node_C("file")
+    node= None
+    for data in p[1][0].get_data():
+        if data.name=="object":
+            k,p1=list(data.get_items())[0]
+            node=Node_C(str(k))
+
     for value in p[1]:
         if isinstance(value,Key_C):
             node.add_data(value)
         elif isinstance(value,Node_C):
+            node.add_child(value)
+        elif isinstance(value,List_CP):
             node.add_child(value)
     p[0]=node
 
@@ -97,14 +94,16 @@ def p_block(p):
 
 def p_listblock(p):
     '''listblock : WORD LPAREN blocks RPAREN SEMICOLON'''
-    listcp=List_CP(p[1])
+    #print(p[3])
     if isinstance(p[3][0],list):
         i=0
         for coord in p[3][0]:
             coord._Value_P__name=f"v{i}"
             i+=1
-    p[0]=Key_C(p[1],List_CP(p[1],elems=[p[3][0]]))
-    print(p[0])
+        p[0]=Key_C(p[1],List_CP(p[1],elems=[p[3][0]]))
+    elif isinstance(p[3][0],Node_C):
+        p[0]=List_CP(p[1],values=p[3],isNode=True)
+    #print(p[0])
 
 def p_coodlists(p):
     '''coordlists : coordlists coodlist
@@ -118,8 +117,12 @@ def p_coodlists(p):
 def p_coordlist(p):
     '''
     coodlist : LPAREN NUMBER NUMBER NUMBER RPAREN
+             | LPAREN NUMBER NUMBER NUMBER NUMBER RPAREN
     '''
-    p[0]=List_CP("v", elems=[[Flt_P('x', p[2]), Flt_P('y', p[3]), Flt_P('z', p[4])]])
+    if len(p)==6:
+        p[0]=List_CP("v", elems=[[Flt_P('x', p[2]), Flt_P('y', p[3]), Flt_P('z', p[4])]])
+    else:
+        p[0]=List_CP("v", elems=[[Flt_P('x', p[2]), Flt_P('y', p[3]), Flt_P('z', p[4]),Flt_P('z', p[5])]])
 
 def p_hex_item(p):
     '''hex_item : WORD LPAREN NUMBER NUMBER NUMBER NUMBER NUMBER NUMBER NUMBER NUMBER RPAREN LPAREN  NUMBER NUMBER NUMBER RPAREN WORD LPAREN  NUMBER NUMBER NUMBER RPAREN'''
@@ -171,6 +174,7 @@ def p_anylist(p):
         p[0] = p[1] + [p[2]]
     else:
         p[0] = [p[1]]
+    #print(p[0])
 
 def p_sitem(p):
     '''
@@ -180,6 +184,8 @@ def p_sitem(p):
           | dimension
     '''
     p[0]=p[1]
+    tt=p[0]
+    #print(p[0])
 
 def p_word(p):
     '''
@@ -204,118 +210,12 @@ def p_dimension(p):
     dimension : LSQUABRAC NUMBER NUMBER NUMBER NUMBER NUMBER NUMBER NUMBER RSQUABRAC 
     '''
     p[0]=Dim_Set_P("dim_set",p[2:9])
-
-
-
-
-
-
-
-# def p_statements(p):
-#     '''statements : statements block
-#                   | block'''
-#     if len(p) == 3:
-#         p[0] = p[1]+[p[2]]
-#     else: 
-#         p[0] = [p[1]]
-
-# def p_statement_word_word(p):
-#     '''statement : WORD words SEMICOLON
-#     '''
-#     #print(f"Parsing WORD-WORD: {p[1]}, {p[2]}")
-#     p[0]=Key_C(p[1],Enm_P(p[1],set(p[2]),p[2][0]))
-
-# def p_statement_word_words(p):
-#     '''words : words WORD
-#             | WORD 
-#     '''
-#     if len(p)==3:
-#         p[1].append(p[2])
-#         p[0]=p[1]
-#     else:
-#         p[0] = [p[1]]
-
-# def p_statement_word_number(p):
-#     '''statement : WORD NUMBER SEMICOLON'''
-#     p[0]=Key_C(p[1],Flt_P('val1', minimum=0, maximum=1000, default=p[2]))
-
-# def p_statement_dollar_word(p):
-#     '''statement : DOLLAR WORD SEMICOLON'''
-#     p[0] = {"$": p[2]}
-
-# def p_statement_block(p):
-#     '''statement : block'''
-#     p[0] = p[1]
-
-# def p_statement_word_list(p):
-#     '''statement : WORD value_list SEMICOLON'''
-#     p[0] = {p[1]: p[2]}
-
-# def p_list_block(p):
-#     '''list_block : LPAREN list_items RPAREN SEMICOLON'''
-#     p[0] = p[2]
-#     #print(p[0])
-
-# def p_list_items(p):
-#     '''list_items : list_items list_item
-#                   | list_item
-#                   | blocks
-#                   | empty'''
-#     if len(p) == 3:
-#         if p[1] is None:
-#             p[0] = [p[2]]
-#         else:
-#             p[0] = p[1] + [p[2]] if p[2] is not None else p[1]
-#     elif len(p) == 2 and p[1] is not None:
-#         if isinstance(p[1],dict):
-#             p[0]=p[1]
-#         else:
-#             p[0] = [p[1]]
-#     else:
-#         p[0] = []
-
-# def p_list_item(p):
-#     '''list_item : hex_item
-#                  | faces_item'''
-#     p[0] = p[1]
-
-# def p_faces_item(p):
-#     '''faces_item : LPAREN vertex_list RPAREN'''
-#     p[0] = p[2]
-
-# def p_vertex_list(p):
-#     '''vertex_list : vertex_list NUMBER
-#                    | NUMBER'''
-#     if len(p) == 3:
-#         p[0] = p[1] + [p[2]]
-#     else:
-#         p[0] = [p[1]]
-
-# def p_number_list(p):
-#     '''number_list : number_list NUMBER
-#                    | NUMBER'''
-#     if len(p) == 3:
-#         p[0] = p[1] + [p[2]]
-#     else:
-#         p[0] = [p[1]]
+    #print(p[0])
 
 def p_empty(p):
     'empty :'
     p[0]=None
-
-# def p_value_list(p):
-#     '''value_list : value_list COMMA value_list
-#                   | value'''
-#     if len(p)==4:
-#         p[0]=p[1]+p[3]
-#     else:
-#         p[0]=[p[1]]
-
-# def p_value(p):
-    '''value : WORD
-             | NUMBER'''
-    p[0] = p[1]
-
+    
 def p_error(p):
     if p:
         print(f"Syntax error at token {p.type} ('{p.value}') at line {p.lineno}")
@@ -328,53 +228,12 @@ def parse_fvsolutions(text):
     return parser.parse(text, lexer=lexer)
 
 #Traverse through the folder
-# for filename in os.listdir(folder_path):
-#     file_path = os.path.join(folder_path, filename)
-#     for file in os.listdir(file_path):
-#         with open(os.path.join(file_path, file)) as tF:
-#             text =tF.read()
-#         tt=parse_fvsolutions(text)
-#         #print(tt)
-#         show_tree(tt)
-
-tt= parse_fvsolutions(r'''/*--------------------------------*- C++ -*----------------------------------*\
-  =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
-   \\    /   O peration     | Website:  https://openfoam.org
-    \\  /    A nd           | Version:  9
-     \\/     M anipulation  |
-\*---------------------------------------------------------------------------*/
-FoamFile
-{
-    format      ascii;
-    class       dictionary;
-    object      blockMeshDict;
-}
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-convertToMeters 0.1;
-
-vertices
-(
-    (0 0 0)
-    (1 0 0)
-    (1 1 0)
-    (0 1 0)
-    (0 0 0.1)
-    (1 0 0.1)
-    (1 1 0.1)
-    (0 1 0.1)
-);
-
-blocks
-(
-    hex (0 1 2 3 4 5 6 7) (20 20 1) simpleGrading (1 1 1)
-);
-
-
-
-// ************************************************************************* //
-''')
-
-print (tt)
-show_tree(tt)
+for filename in os.listdir(folder_path):
+    file_path = os.path.join(folder_path, filename)
+    for file in os.listdir(file_path):
+        with open(os.path.join(file_path, file)) as tF:
+            text =tF.read()
+        tt=parse_fvsolutions(text)
+        #print(tt)
+        show_tree(tt)
+        print("\n\n\n")
