@@ -1,9 +1,16 @@
 import ply.lex as lex
 import ply.yacc as yacc
-from pyvnt import *
+from pyvnt.Reference.error_classes import IncorrectLengthError
+from pyvnt.Reference.basic import *
+from pyvnt.Container.node import *
+from pyvnt.Container.list import *
+from pyvnt.Container.key import *
+from pyvnt.Reference.dimension_set import *
+from pyvnt.utils.show_tree import *
+from pyvnt.Reference.vector import *
+from pyvnt.Reference.tensor import *
 import os
 
-folder_path = "Demo_case_files/cavity"
 
 tokens = (
             'WORD', 
@@ -54,8 +61,6 @@ def t_error(t):
 
 lexer = lex.lex()
 
-
-
 # Parsing rules
 
 def p_file(p):
@@ -94,7 +99,6 @@ def p_block(p):
 
 def p_listblock(p):
     '''listblock : WORD LPAREN blocks RPAREN SEMICOLON'''
-    #print(p[3])
     if isinstance(p[3][0],list):
         i=0
         for coord in p[3][0]:
@@ -103,7 +107,6 @@ def p_listblock(p):
         p[0]=Key_C(p[1],List_CP(p[1],elems=[p[3][0]]))
     elif isinstance(p[3][0],Node_C):
         p[0]=List_CP(p[1],values=p[3],isNode=True)
-    #print(p[0])
 
 def p_coodlists(p):
     '''coordlists : coordlists coodlist
@@ -152,7 +155,6 @@ def p_hex_item(p):
 def p_dictnary(p):
     '''dictnary : WORD LBRACE blocks RBRACE'''
     node = Node_C(p[1])
-    #print(p[3])
     for value in p[3]:
         if isinstance(value,Key_C):
             node.add_data(value)
@@ -174,7 +176,6 @@ def p_anylist(p):
         p[0] = p[1] + [p[2]]
     else:
         p[0] = [p[1]]
-    #print(p[0])
 
 def p_sitem(p):
     '''
@@ -184,8 +185,6 @@ def p_sitem(p):
           | dimension
     '''
     p[0]=p[1]
-    tt=p[0]
-    #print(p[0])
 
 def p_word(p):
     '''
@@ -197,7 +196,7 @@ def p_number(p):
     '''
     number : NUMBER
     '''
-    p[0]=Flt_P("value",default=p[1])
+    p[0]=Flt_P("value",default=p[1],maximum=1e5)
 
 def p_vector(p):
     '''
@@ -224,16 +223,42 @@ def p_error(p):
 
 parser = yacc.yacc()
 
-def parse_fvsolutions(text):
+def parse(text):
     return parser.parse(text, lexer=lexer)
 
-#Traverse through the folder
-for filename in os.listdir(folder_path):
-    file_path = os.path.join(folder_path, filename)
-    for file in os.listdir(file_path):
-        with open(os.path.join(file_path, file)) as tF:
-            text =tF.read()
-        tt=parse_fvsolutions(text)
-        #print(tt)
-        show_tree(tt)
-        print("\n\n\n")
+
+def parse_file(text :str):
+    """
+    Parse OpenFoam file and return the resulting object.
+    
+    Args:
+        text (str): The input text to parse
+        
+    Returns:
+        The parsed object structure
+    """
+    return parse(text)
+
+def parse_case(path :str):
+    """
+    Parse OpenFoam Case File and return the resulting object.
+    
+    Args:
+        path (str): Path to the Case File
+        
+    Returns:
+        The parsed node object
+    """
+    masterNode = Node_C(os.path.basename(os.path.normpath(path)))
+
+    for filename in os.listdir(path):
+        file_path = os.path.join(path, filename)
+        if os.path.isdir(file_path):  # If it's a folder, process it recursively
+            folderNode = parse_case(file_path)
+            masterNode.add_child(folderNode)
+        elif os.path.isfile(file_path):  # If it's a file, process it
+            with open(file_path, 'r') as tF:
+                text = tF.read()
+            tempText = parse(text)
+            masterNode.add_child(tempText)
+    return masterNode
