@@ -69,8 +69,6 @@ class _OpenFoamParserInter:
         print(f"Illegal character '{t.value[0]}'")
         t.lexer.skip(1)
 
-    # lexer = lex.lex()
-
     # Parsing rules
 
     def p_file(self,p):
@@ -89,9 +87,36 @@ class _OpenFoamParserInter:
         '''blocks : blocks block
                 | block'''
         if len(p) == 3:
-            p[0] = p[1] + [p[2]]
+            isDuplicate = False  # To check for a duplicate key
+            for i, item in enumerate(p[1]):
+                    if item.name == p[2].name:
+                        p[1][i] = p[2]  # Replace old value with new one
+                        isDuplicate = True
+                        break
+            if not isDuplicate:
+                p[0] = p[1] + [p[2]]
+            else:
+                p[0] = p[1]  # Ensure p[0] is assigned
+
         else:
             p[0] = [p[1]] if p[1] is not None else [[]]
+        
+        
+        # if len(p) == 3:
+        #     isDuplicate=False # to check the duplicate key
+        #     print(isinstance(p[1],list))
+
+        #     if isinstance(p[2],Key_C):
+        #         for i,item in enumerate(p[1]):
+        #             print(p[2].name)
+        #             if item.name == p[2].name:
+        #                 p[1][i] = p[2]  # Replace old value with new one
+        #                 isDuplicate=True
+        #                 break
+        #     if isDuplicate==False:
+        #         p[0] = p[1] + [p[2]]
+        # else:
+        #     p[0] = [p[1]] if p[1] is not None else [[]]
 
     def p_block(self,p):
         '''block : dictnary
@@ -226,8 +251,6 @@ class _OpenFoamParserInter:
         else:
             print("Syntax error at EOF")
 
-    # parser = yacc.yacc()
-
     def parse(self,text):
         return self.parser.parse(text, lexer=self.lexer)
 
@@ -235,7 +258,7 @@ class OpenFoamParser:
     def __init__(self):
         self._parseInternal=_OpenFoamParserInter()
 
-    def parse_file(self,text :str):
+    def parse_file(self,text :str=None,path:str=None):
         """
         Parse OpenFoam file and return the resulting object.
         
@@ -245,6 +268,12 @@ class OpenFoamParser:
         Returns:
             The parsed object structure
         """
+        if path!=None:
+            if os.path.isfile(path):
+                with open(path, 'r') as tF:
+                    text = tF.read()
+            else:
+                print("Path does not to file")
         return self._parseInternal.parse(text)
 
     def parse_case(self,path :str):
@@ -252,7 +281,7 @@ class OpenFoamParser:
         Parse OpenFoam Case File and return the resulting object.
         
         Args:
-            path (str): Path to the Case File
+            path (str): Path to the Case File Or a single
             
         Returns:
             The parsed node object 
@@ -290,7 +319,6 @@ class OpenFoamParser:
                     result = data
                     found = True
                     break
-
             if not found:
                 return None  # Return None if any key in the Parsed Tree is not found
         return result
