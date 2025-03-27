@@ -10,10 +10,9 @@ from pyvnt.utils.show_tree import *
 from pyvnt.Reference.vector import *
 from pyvnt.Reference.tensor import *
 import os
+import yaml
 
-
-
-class _OpenFoamParserInter:
+class _OpenFoamParserInternalText:
 
     tokens = (
                 'WORD', 
@@ -155,7 +154,7 @@ class _OpenFoamParserInter:
         if len(p)==6:
             p[0]=List_CP("v", elems=[[Flt_P('x', p[2]), Flt_P('y', p[3]), Flt_P('z', p[4])]])
         else:
-            p[0]=List_CP("v", elems=[[Flt_P('x', p[2]), Flt_P('y', p[3]), Flt_P('z', p[4]),Flt_P('z', p[5])]])
+            p[0]=List_CP("v", elems=[[Flt_P('x', p[2]), Flt_P('y', p[3]), Flt_P('z', p[4]),Flt_P('k', p[5])]])
 
     def p_hex_item(self,p):
         '''hex_item : WORD LPAREN NUMBER NUMBER NUMBER NUMBER NUMBER NUMBER NUMBER NUMBER RPAREN LPAREN  NUMBER NUMBER NUMBER RPAREN WORD LPAREN  NUMBER NUMBER NUMBER RPAREN'''
@@ -254,11 +253,125 @@ class _OpenFoamParserInter:
     def parse(self,text):
         return self.parser.parse(text, lexer=self.lexer)
 
+class _OpenFoamParserInternalYaml:
+    def __init__(self):
+        self.data=None
+        self.tt=None
+
+    # def traverse_dict(self, d, name="root"):
+    #     """ Recursively build a tree structure from the dictionary """
+    #     node = Node_C(name)
+    #     print(d)
+    #     for key, value in d.items():
+    #         if isinstance(value, dict):                # If value is a dictionary, create a new node and recurse
+    #             child_node = self.traverse_dict(value, key)
+    #             node.add_child(child_node)
+    #         elif isinstance(value,list):
+    #             if any(isinstance(v, dict) for v in value):                # If there is a dictionary in list, create a new list node and  recurse the dictionaries
+    #                 dictlist=[]
+    #                 for v in value:
+    #                     for sub_key, sub_value in v.items():
+    #                         child_node = self.traverse_dict(sub_value, sub_key)
+    #                         dictlist.append(child_node)
+    #                 listnode = List_CP(key,values=dictlist, isNode=True)
+    #                 node.add_child(listnode)
+    #             else:
+    #                 # For normal list
+    #                 cordslist=[]
+    #                 for item in value:
+    #                     vallist=[]
+    #                     if isinstance(item,list):
+    #                         i=0
+    #                         for val in item:
+    #                             vallist.append(Flt_P(f'v{i}',val))
+    #                             i+=1
+    #                         tt=List_CP(f'V',elems=[vallist])
+    #                         cordslist.append(tt)
+    #                     elif isinstance(item,str):
+    #                         enp=Enm_P(item,{item},item)
+    #                         cordslist.append(enp)
+    #                     elif isinstance(item,(float,int)):
+    #                         cordslist.append(Flt_P(f'v',item))
+
+    #                 listcp=List_CP(key,elems=[cordslist])
+    #                 key_obj=Key_C(str(key),listcp)
+    #                 node.add_data(key_obj)
+    #         else:
+    #             # If value is not a dictionary, create a Key_C object
+    #             key_obj = Key_C(str(key))
+    #             if isinstance(value,str):
+    #                 enmpList=value.split()
+    #                 if(len(enmpList)>1):
+    #                     for value in enmpList:
+    #                         enp=Enm_P(value,{value},value)
+    #                         key_obj.append_val(enp._Value_P__name, enp)
+    #                 else :
+    #                     enp=Enm_P(enmpList[0],{enmpList[0]},enmpList[0])
+    #                     key_obj.append_val(enp._Value_P__name, enp)
+    #             elif isinstance(value ,(float,int)):
+    #                 flt=Flt_P('v',value)
+    #                 key_obj.append_val(flt._Value_P__name,flt)
+
+    #             node.add_data(key_obj)
+
+    #     return node
+    
+    def traverse_dict(self, d, name="root"):
+        """ Recursively build a tree structure from the dictionary """
+        node = Node_C(name)
+        for key, value in d.items():
+            if isinstance(value, dict):
+                node.add_child(self.traverse_dict(value, key))
+            elif isinstance(value, list):
+                listdata=self.handle_list(value, key)
+                if isinstance(listdata,Key_C):
+                    node.add_data(listdata)
+                elif isinstance(listdata,List_CP):
+                    node.add_child(listdata)
+            else:
+                node.add_data(self.handle_value(key, value))
+        
+        return node
+
+    def handle_list(self, values, key):
+        """ Handle Node list and key List """
+        if any(isinstance(v, dict) for v in values):
+            dict_list = [self.traverse_dict(sub_value, sub_key) for v in values for sub_key,sub_value in v.items()]
+            return List_CP(key, values=dict_list, isNode=True)
+        
+        processed_items = [self.process_list_item(item) for item in values]
+        return Key_C(str(key),List_CP(key, elems=[processed_items]))
+
+    def process_list_item(self, item):
+        """ Process list items """
+        if isinstance(item, list):
+            return List_CP("V", elems=[[Flt_P('v', val) for val in item]])
+        elif isinstance(item, str):
+            return Enm_P(item, {item}, item)
+        elif isinstance(item, (float, int)):
+            return Flt_P("v", item)
+        return item
+
+    def handle_value(self, key, value):
+        """ Handle individual non-list/non-dictionary values """
+        key_obj = Key_C(str(key))
+        if isinstance(value, str):
+            for val in value.split():
+                key_obj.append_val(val, Enm_P(val, {val}, val))
+        elif isinstance(value, (float, int)):
+            key_obj.append_val("v", Flt_P("v", value))
+        return key_obj
+
+    def parseYaml(self,text:str):
+        self.data=yaml.safe_load(text)
+        return self.traverse_dict(d=self.data)
+
 class OpenFoamParser:
     def __init__(self):
-        self._parseInternal=_OpenFoamParserInter()
+        self._parseInternalText=_OpenFoamParserInternalText()
+        self._parseInternalYaml=_OpenFoamParserInternalYaml()
 
-    def parse_file(self,text :str=None,path:str=None):
+    def parse_file(self,text :str=None,fileType :str='txt',path:str=None):
         """
         Parse OpenFoam file and return the resulting object.
         
@@ -269,12 +382,25 @@ class OpenFoamParser:
             The parsed object structure
         """
         if path!=None:
+            ext = os.path.splitext(path)[1]
             if os.path.isfile(path):
                 with open(path, 'r') as tF:
                     text = tF.read()
             else:
                 print("Path does not to file")
-        return self._parseInternal.parse(text)
+                return None
+            if ext in ('','.txt'):
+                parsed=self._parseInternalText.parse(text)
+            elif ext=='.yaml':
+                parsed=self._parseInternalYaml.parseYaml(text)
+        elif text!=None:
+            if fileType=='txt':
+                parsed=self._parseInternalText.parse(text)
+            elif fileType=='yaml':
+                parsed=self._parseInternalYaml.parseYaml(text)
+            else:
+                print("This File Formate supported")
+        return parsed
 
     def parse_case(self,path :str):
         """
@@ -287,16 +413,13 @@ class OpenFoamParser:
             The parsed node object 
         """
         masterNode = Node_C(os.path.basename(os.path.normpath(path)))
-
         for filename in os.listdir(path):
             file_path = os.path.join(path, filename)
             if os.path.isdir(file_path):  # If it's a folder, process it recursively
-                folderNode = self._parseInternal.parse_case(file_path)
+                folderNode = self.parse_case(file_path)
                 masterNode.add_child(folderNode)
             elif os.path.isfile(file_path):  # If it's a file, process it
-                with open(file_path, 'r') as tF:
-                    text = tF.read()
-                filnode = self._parseInternal.parse(text)
+                filnode = self.parse_file(path=file_path)
                 filnode.name=filename
                 masterNode.add_child(filnode)
         return masterNode
