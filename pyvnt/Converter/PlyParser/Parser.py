@@ -56,7 +56,7 @@ class _OpenFoamParserInternalText:
         pass
 
     def t_WORD(self,t):
-        r'[a-zA-Z_][a-zA-Z0-9_]*(\(\s*([a-zA-Z_][a-zA-Z0-9_]*\s*(,\s*[a-zA-Z_][a-zA-Z0-9_]*)*)?\s*\))?'
+        r'[a-zA-Z_][+\-<>(),.\*|a-zA-Z_0-9&%:]*'
         return t
 
     def t_NUMBER(self,t):
@@ -225,7 +225,13 @@ class _OpenFoamParserInternalText:
         '''
         number : NUMBER
         '''
-        p[0]=Flt_P("value",default=p[1],maximum=1e5)
+        max=1e5
+        min=0
+        if p[1]>max:
+            max=p[1]
+        if p[1]<min:
+            min=p[1]
+        p[0]=Flt_P("value",default=p[1],maximum=max,minimum=min)
 
     def p_vector(self,p):
         '''
@@ -339,28 +345,68 @@ class _OpenFoamParserInternalYaml:
             dict_list = [self.traverse_dict(sub_value, sub_key) for v in values for sub_key,sub_value in v.items()]
             return List_CP(key, values=dict_list, isNode=True)
         
+        if self.check_list(values,(int,float),7):
+            dims=Dim_Set_P("dim_set",values)
+            return Key_C(str(key),dims)
+        
         processed_items = [self.process_list_item(item) for item in values]
+        
         return Key_C(str(key),List_CP(key, elems=[processed_items]))
 
     def process_list_item(self, item):
         """ Process list items """
         if isinstance(item, list):
-            return List_CP("V", elems=[[Flt_P('v', val) for val in item]])
+            elments=[]
+            for val in item:
+                elments.append(self.strOrintOrfloat(val))
+            return List_CP("V", elems=[elments])
         elif isinstance(item, str):
-            return Enm_P(item, {item}, item)
+            return self.strOrintOrfloat(item)
         elif isinstance(item, (float, int)):
-            return Flt_P("v", item)
+            return self.strOrintOrfloat(item)
         return item
+
+    def check_list(self,lst, data_type, expected_length):
+        return all(isinstance(item, data_type) for item in lst) and len(lst) == expected_length
 
     def handle_value(self, key, value):
         """ Handle individual non-list/non-dictionary values """
         key_obj = Key_C(str(key))
         if isinstance(value, str):
             for val in value.split():
-                key_obj.append_val(val, Enm_P(val, {val}, val))
+                key_obj.append_val(val, self.strOrintOrfloat(val))
         elif isinstance(value, (float, int)):
-            key_obj.append_val("v", Flt_P("v", value))
+            key_obj.append_val("v", self.strOrintOrfloat(value))
         return key_obj
+
+    def strOrintOrfloat(self,value):
+        """
+        Parse OpenFoam Case File and return the resulting object.
+        
+        Args:
+            path (str): Path to the Case File Or a single
+            
+        Returns:
+            if string returns Enm_p
+            if Scientific notation return Flt_p
+        """
+        val=value
+        try:
+            if isinstance(value,str):
+                val=float(value)
+        except ValueError:
+            return Enm_P(val, {val}, val)
+
+        max=1e5
+        min=0
+        if val>max:
+            max=val
+        if val<min:
+            min=val
+        if isinstance(val,float):
+            return Flt_P("v", val,minimum=min,maximum=max)
+        elif isinstance(val,int):
+            return Int_P("v", val,minimum=int(min),maximum=int(max))
 
     def parseYaml(self,text:str):
         self.data=yaml.safe_load(text)
@@ -383,6 +429,7 @@ class OpenFoamParser:
         """
         if path!=None:
             ext = os.path.splitext(path)[1]
+            filename=os.path.basename(path)
             if os.path.isfile(path):
                 with open(path, 'r') as tF:
                     text = tF.read()
@@ -393,7 +440,10 @@ class OpenFoamParser:
                 parsed=self._parseInternalText.parse(text)
             elif ext=='.yaml':
                 parsed=self._parseInternalYaml.parseYaml(text)
+            parsed.name=filename
         elif text!=None:
+            if text==None:
+                print("Please enter filetype")
             if fileType=='txt':
                 parsed=self._parseInternalText.parse(text)
             elif fileType=='yaml':
