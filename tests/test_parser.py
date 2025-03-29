@@ -4,18 +4,16 @@ from pyvnt import *
 
 DICT_PATH = Path("tests/dicts")
 
-
 @pytest.fixture
 def parser():
     return OpenFoamParser()
-
 
 class TestOpenFoamParser:
 
     def test_empty_file(self, parser):
         tt = parser.parse_file(path=str(DICT_PATH / "emptyFile"))
         assert isinstance(tt, Node_C)
-        assert tt.name == "File"
+        assert tt.name == "emptyFile"
         assert tt.data == []
         assert tt.children == ()
 
@@ -68,6 +66,14 @@ class TestOpenFoamParser:
         key5 = parser.get_value(tt, "key5")
         assert isinstance(key5, Key_C)
         assert list(key5.get_items())[0][1].give_val() == [0, 1, 0, 0, 0, 0, 0]
+
+        key5 = parser.get_value(tt, "key6")
+        assert isinstance(key5, Key_C)
+        assert list(key5.get_items())[0][1].give_val() == 1e-256
+
+        key5 = parser.get_value(tt, "key7")
+        assert isinstance(key5, Key_C)
+        assert list(key5.get_items())[0][1].give_val() == 1e+256
 
     def test_nested_dict_parsing(self, parser):
         tt = parser.parse_file(path=str(DICT_PATH / "nestedDictWithKeys"))
@@ -139,6 +145,11 @@ class TestOpenFoamParser:
             div_scheme = parser.get_value(tt, "divSchemes", field)
             assert isinstance(div_scheme, Key_C)
             assert list(div_scheme.get_keys()) == ["Gauss", "upwind"]
+
+        for field in ["div(U)", "div(((rho*nuEff)*dev2(T(grad(U)))))"]:
+            div_scheme = parser.get_value(tt, "divSchemes", field)
+            assert isinstance(div_scheme, Key_C)
+            assert list(div_scheme.get_keys()) == ["Gauss", "linear"]
 
         laplacian = parser.get_value(tt, "laplacianSchemes", "default")
         assert isinstance(laplacian, Key_C)
