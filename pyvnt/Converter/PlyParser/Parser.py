@@ -1,6 +1,6 @@
 import ply.lex as lex
 import ply.yacc as yacc
-from pyvnt.Reference.error_classes import IncorrectLengthError
+from pyvnt.Reference.error_classes import ParserError
 from pyvnt.Reference.basic import *
 from pyvnt.Container.node import *
 from pyvnt.Container.list import *
@@ -12,8 +12,48 @@ from pyvnt.Reference.tensor import *
 import os
 import yaml
 
+
+'''
+Grammer For parser 
+
+
+file : blocks
+
+blocks : blocks block | block
+
+block : dictionary | listblock | statement | hex_item | coordlists | empty
+
+dictionary : WORD LBRACE blocks RBRACE
+
+listblock : WORD LPAREN blocks RPAREN SEMICOLON
+
+hex_item : WORD LPAREN NUMBER NUMBER NUMBER NUMBER NUMBER NUMBER NUMBER NUMBER RPAREN LPAREN  NUMBER NUMBER NUMBER RPAREN WORD LPAREN  NUMBER NUMBER NUMBER RPAREN
+
+coordlists : coordlists coodlist | coodlist
+
+coodlist : LPAREN NUMBER NUMBER NUMBER RPAREN | LPAREN NUMBER NUMBER NUMBER NUMBER RPAREN
+
+statement : WORD anylist SEMICOLON
+
+anylist : anylist sitem | sitem
+
+sitem : word | number | vector | dimension
+
+vector : LPAREN NUMBER NUMBER NUMBER RPAREN
+
+dimension : LSQUABRAC NUMBER NUMBER NUMBER NUMBER NUMBER NUMBER NUMBER RSQUABRAC
+
+
+This is the basic parser which works on our custom datatypes 
+
+Todo: Add macros and code block supports 
+      Currently Handling string as enum
+      Implementation of tensor pending
+'''
+
 class _OpenFoamParserInternalText:
 
+    # Basic Tokens 
     tokens = (
                 'WORD', 
                 'NUMBER',
@@ -47,12 +87,14 @@ class _OpenFoamParserInternalText:
         r'\n+'
         t.lexer.lineno += len(t.value)
 
-    def t_comm(self,t):
+    def t_comm(self,t): # Skips the multiline comment
         r'/\*(.|\n)*?\*/'
+        t.lexer.lineno += t.value.count('\n')
         return None
 
     def t_comments(self,t):
-        r'\//.*'
+        r'\//.*\n'
+        t.lexer.lineno+=1
         pass
 
     def t_WORD(self,t):
@@ -70,21 +112,28 @@ class _OpenFoamParserInternalText:
 
     # Parsing rules
 
+    # object == our custom data type 
+    # In many parser functions we are returning object as list beacuse in p_file we are checking object type which finally come from p_blocks
+
+
     def p_file(self,p):
         '''file : blocks'''
         node= Node_C("File")
-        for value in p[1]:
-            if isinstance(value,Key_C):
+        for value in p[1]: # Geting mixed list of (Key_C,Node_C,List_Cp)
+            if isinstance(value,Key_C): # If key add to data in parent node
                 node.add_data(value)
-            elif isinstance(value,Node_C):
+            elif isinstance(value,Node_C): # if Node add child to parent Node
                 node.add_child(value)
-            elif isinstance(value,List_CP):
+            elif isinstance(value,List_CP): # if list then it definietly will be node then add child to parent node
                 node.add_child(value)
         p[0]=node
 
     def p_blocks(self,p):
         '''blocks : blocks block
                 | block'''
+        
+        # Here p[1] is list and p[2] is object 
+
         if len(p) == 3:
             isDuplicate = False  # To check for a duplicate key
             for i, item in enumerate(p[1]):
@@ -118,29 +167,30 @@ class _OpenFoamParserInternalText:
         #     p[0] = [p[1]] if p[1] is not None else [[]]
 
     def p_block(self,p):
-        '''block : dictnary
+        '''block : dictionary
                 | listblock
                 | statement
                 | hex_item
                 | coordlists
                 | empty'''
-        p[0] = p[1]
+        p[0] = p[1] # Just returns the object 
 
     def p_listblock(self,p):
         '''listblock : WORD LPAREN blocks RPAREN SEMICOLON'''
-        if isinstance(p[3][0],list):
+        if isinstance(p[3][0],list): # if its item in list is list returns key_c with data list_cp
             i=0
             for coord in p[3][0]:
                 coord._Value_P__name=f"v{i}"
                 i+=1
             p[0]=Key_C(p[1],List_CP(p[1],elems=[p[3][0]]))
-        elif isinstance(p[3][0],Node_C):
+        elif isinstance(p[3][0],Node_C): # If any item is Node_c means List_cp is node 
             p[0]=List_CP(p[1],values=p[3],isNode=True)
 
     def p_coodlists(self,p):
         '''coordlists : coordlists coodlist
                     | coodlist
         '''
+        
         if len(p)==3:
             p[0]=p[1]+[p[2]]
         else:
@@ -181,8 +231,8 @@ class _OpenFoamParserInternalText:
                     Int_P("z", p[21])
                 ]])]
         
-    def p_dictnary(self,p):
-        '''dictnary : WORD LBRACE blocks RBRACE'''
+    def p_dictionary(self,p):
+        '''dictionary : WORD LBRACE blocks RBRACE'''
         node = Node_C(p[1])
         for value in p[3]:
             if isinstance(value,Key_C):
@@ -201,6 +251,7 @@ class _OpenFoamParserInternalText:
     def p_anylist(self,p):
         '''anylist : anylist sitem
                 | sitem'''
+        # Anylist means it can be anything like list of string ,numbers,mixed etc
         if len(p) == 3:
             p[0] = p[1] + [p[2]]
         else:
@@ -250,80 +301,63 @@ class _OpenFoamParserInternalText:
         'empty :'
         p[0]=None
         
-    def p_error(self,p):
-        if p:
-            print(f"Syntax error at token {p.type} ('{p.value}') at line {p.lineno}")
-        else:
-            print("Syntax error at EOF")
+    def get_column(self,text, lexpos):
+        """Calculate the column number from lexer position."""
+        if text is None:
+            return None
+        last_newline = text.rfind('\n', 0, lexpos)
+        return lexpos - last_newline
 
+    def p_error(self,p):
+        """
+        Handles parsing errors and raises a structured exception.
+        
+        Args:
+            p: The offending token causing the syntax error.
+            lexer: Optional lexer object to extract more details.
+        """
+        if p:
+            column = self.get_column(self.lexer.lexdata, p.lexpos) if self.lexer else None
+            error = ParserError(
+                f"Unexpected token '{p.value}' of type '{p.type}'",
+                lineno=p.lineno,
+                column=column,
+            )
+        else:
+            error = ParserError("Unexpected end of file (EOF).")
+        # print(error)
+        raise error
+    
     def parse(self,text):
+        """
+        Parses the given OpenFOAM text input using the defined lexer and parser.
+
+        Args:
+            text (str): The OpenFOAM text input to parse.
+
+        Returns:
+            The parsed object(Node_C).
+        """
         return self.parser.parse(text, lexer=self.lexer)
 
 class _OpenFoamParserInternalYaml:
+    """
+    Internal class for parsing OpenFOAM YAML files.
+    Provides methods to traverse and process YAML data into a tree structure.
+    """
     def __init__(self):
         self.data=None
         self.tt=None
 
-    # def traverse_dict(self, d, name="root"):
-    #     """ Recursively build a tree structure from the dictionary """
-    #     node = Node_C(name)
-    #     print(d)
-    #     for key, value in d.items():
-    #         if isinstance(value, dict):                # If value is a dictionary, create a new node and recurse
-    #             child_node = self.traverse_dict(value, key)
-    #             node.add_child(child_node)
-    #         elif isinstance(value,list):
-    #             if any(isinstance(v, dict) for v in value):                # If there is a dictionary in list, create a new list node and  recurse the dictionaries
-    #                 dictlist=[]
-    #                 for v in value:
-    #                     for sub_key, sub_value in v.items():
-    #                         child_node = self.traverse_dict(sub_value, sub_key)
-    #                         dictlist.append(child_node)
-    #                 listnode = List_CP(key,values=dictlist, isNode=True)
-    #                 node.add_child(listnode)
-    #             else:
-    #                 # For normal list
-    #                 cordslist=[]
-    #                 for item in value:
-    #                     vallist=[]
-    #                     if isinstance(item,list):
-    #                         i=0
-    #                         for val in item:
-    #                             vallist.append(Flt_P(f'v{i}',val))
-    #                             i+=1
-    #                         tt=List_CP(f'V',elems=[vallist])
-    #                         cordslist.append(tt)
-    #                     elif isinstance(item,str):
-    #                         enp=Enm_P(item,{item},item)
-    #                         cordslist.append(enp)
-    #                     elif isinstance(item,(float,int)):
-    #                         cordslist.append(Flt_P(f'v',item))
-
-    #                 listcp=List_CP(key,elems=[cordslist])
-    #                 key_obj=Key_C(str(key),listcp)
-    #                 node.add_data(key_obj)
-    #         else:
-    #             # If value is not a dictionary, create a Key_C object
-    #             key_obj = Key_C(str(key))
-    #             if isinstance(value,str):
-    #                 enmpList=value.split()
-    #                 if(len(enmpList)>1):
-    #                     for value in enmpList:
-    #                         enp=Enm_P(value,{value},value)
-    #                         key_obj.append_val(enp._Value_P__name, enp)
-    #                 else :
-    #                     enp=Enm_P(enmpList[0],{enmpList[0]},enmpList[0])
-    #                     key_obj.append_val(enp._Value_P__name, enp)
-    #             elif isinstance(value ,(float,int)):
-    #                 flt=Flt_P('v',value)
-    #                 key_obj.append_val(flt._Value_P__name,flt)
-
-    #             node.add_data(key_obj)
-
-    #     return node
-    
     def traverse_dict(self, d, name="root"):
-        """ Recursively build a tree structure from the dictionary """
+        """ Recursively build a tree structure from the dictionary 
+        Args:
+            d (dict): The dictionary to traverse.
+            name (str): The name of the root node.
+
+        Returns:
+            Node_C: A tree structure representing the dictionary.
+        """
         node = Node_C(name)
         for key, value in d.items():
             if isinstance(value, dict):
@@ -340,8 +374,15 @@ class _OpenFoamParserInternalYaml:
         return node
 
     def handle_list(self, values, key):
-        """ Handle Node list and key List """
-        if any(isinstance(v, dict) for v in values):
+        """ Handle Node list and key List 
+        Args:
+            values (list): The list to process.
+            key (str): The key associated with the list.
+
+        Returns:
+            Key_C or List_CP: A processed representation of the list.
+        """
+        if any(isinstance(v, dict) for v in values): # Check if the list contains dictionaries
             dict_list = [self.traverse_dict(sub_value, sub_key) for v in values for sub_key,sub_value in v.items()]
             return List_CP(key, values=dict_list, isNode=True)
         
@@ -349,13 +390,21 @@ class _OpenFoamParserInternalYaml:
             dims=Dim_Set_P("dim_set",values)
             return Key_C(str(key),dims)
         
+
+        # Process individual items in the list
         processed_items = [self.process_list_item(item) for item in values]
         
         return Key_C(str(key),List_CP(key, elems=[processed_items]))
 
     def process_list_item(self, item):
-        """ Process list items """
-        if isinstance(item, list):
+        """ Process list items 
+        Args:
+            item: The item to process.
+
+        Returns:
+            Processed representation of the item.
+        """
+        if isinstance(item, list): # If the item is a nested list
             elments=[]
             for val in item:
                 elments.append(self.strOrintOrfloat(val))
@@ -367,10 +416,28 @@ class _OpenFoamParserInternalYaml:
         return item
 
     def check_list(self,lst, data_type, expected_length):
+        """
+        Checks if a list matches a specific data type and length.
+
+        Args:
+            lst (list): The list to check.
+            data_type (type): The expected data type of the elements.
+            expected_length (int): The expected length of the list.
+
+        Returns:
+            bool: True if the list matches the criteria, False otherwise.
+        """
         return all(isinstance(item, data_type) for item in lst) and len(lst) == expected_length
 
     def handle_value(self, key, value):
-        """ Handle individual non-list/non-dictionary values """
+        """ Handle individual non-list/non-dictionary values 
+        Args:
+            key (str): The key associated with the value.
+            value: The value to process.
+
+        Returns:
+            Key_C: A key-value representation of the value.
+        """
         key_obj = Key_C(str(key))
         if isinstance(value, str):
             for val in value.split():
@@ -397,35 +464,54 @@ class _OpenFoamParserInternalYaml:
         except ValueError:
             return Enm_P(val, {val}, val)
 
+
+        # Define min and max bounds for numerical values
         max=1e5
         min=0
         if val>max:
             max=val
         if val<min:
             min=val
+
+        # Return the value as a float or integer with bounds
         if isinstance(val,float):
             return Flt_P("v", val,minimum=min,maximum=max)
         elif isinstance(val,int):
             return Int_P("v", val,minimum=int(min),maximum=int(max))
 
     def parseYaml(self,text:str):
+        """
+        Parses YAML file and returns the resulting tree structure.
+
+        Args:
+            text (str): The YAML to parse.
+
+        Returns:
+            Node_C: A tree structure representing the parsed YAML data.
+        """
         self.data=yaml.safe_load(text)
         return self.traverse_dict(d=self.data)
 
 class OpenFoamParser:
+    """
+    Main class for parsing OpenFOAM files and directories.
+    Provides methods to parse individual files or entire case directories.
+    """
     def __init__(self):
         self._parseInternalText=_OpenFoamParserInternalText()
         self._parseInternalYaml=_OpenFoamParserInternalYaml()
 
     def parse_file(self,text :str=None,fileType :str='txt',path:str=None):
         """
-        Parse OpenFoam file and return the resulting object.
-        
+        Parses an OpenFOAM file and returns the resulting object.
+
         Args:
-            text (str): The input text to parse
-            
+            text (str): The input text to parse. Defaults to None.
+            fileType (str): The type of file ('txt' or 'yaml'). Defaults to 'txt'.
+            path (str): The path to the file. Defaults to None.
+
         Returns:
-            The parsed object structure
+            The parsed object structure or None if the file is invalid.
         """
         if path!=None:
             ext = os.path.splitext(path)[1]
@@ -454,7 +540,7 @@ class OpenFoamParser:
 
     def parse_case(self,path :str):
         """
-        Parse OpenFoam Case File and return the resulting object.
+        Parse OpenFoam Case File and return the entire case tree.
         
         Args:
             path (str): Path to the Case File Or a single
@@ -475,6 +561,16 @@ class OpenFoamParser:
         return masterNode
 
     def get_value(self,node:Node_C,*keys):
+        """
+        Retrieves a value from the parsed tree structure using a sequence of keys.
+
+        Args:
+            node (Node_C): The root node of the tree.
+            keys (str): Sequence of keys to traverse the tree.
+
+        Returns:
+            The value corresponding to the keys .
+        """
         result = node  # Start with the root object
         for key in keys:
             found = False  # Flag to check if key is found

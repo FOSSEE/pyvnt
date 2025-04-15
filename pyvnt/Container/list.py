@@ -39,22 +39,36 @@ class List_CP(Value_P, NodeMixin):
 
     __slots__ = ['_Value_P__name', '_List_CP__values', '_List_CP__isNode']
 
-    def __init__(self, name: int, size: int = None, values: [Node_C] = [], elems: [[Value_P]] = [[]], default: Value_P = None, isNode: bool = False, parent: Node_C = None):
+    def __init__(self, 
+             name: int, 
+             size: int = None, 
+             values: [Node_C] = None,
+             elems: [[Value_P]] = None,
+             default: Value_P = None, 
+             isNode: bool = False, 
+             parent: Node_C = None):
+    
         super(List_CP, self).__init__()
         self.__isNode = isNode
 
         if not self.__isNode:
-            self.set_properties(name, size, elems, default) # TODO: Change the method such that the class takes inputs in elements and the class stores list of elements when not acting as a node.
+            self.__values = [[]]
+            if elems is None:
+                elems = [[]]
+
+            self.set_properties(name, size, elems, default)
         else:
-            self.check_type(values = values) # All values needs to be of the type Node_C as the values are all the children nodes
+            if values is not None:
+                self.check_type(values=values)
+            
             self.name = name
             self.__values = []
             self.data = []
-
+            
             if parent:
                 self.parent = parent
 
-            self.children = values
+            self.children = values if values is not None else []
     
     def instance_restricted(self):
         pass
@@ -234,15 +248,43 @@ class List_CP(Value_P, NodeMixin):
         else:
             raise KeyRepeatError(elem)
     
+
+    def append_child(self, value:Node_C):
+        '''
+        Appends an child to the List Node.
+
+        Parameters:
+            value: The Node_C object to be appended as a child.
+        '''
+        current_children = list(self.children)
+        current_children.append(value)
+        self.children = tuple(current_children)
+
+    def format_nested(self,obj, visited=set()):
+        """Helper function to safely format nested structures without infinite recursion."""
+        if id(obj) in visited:
+            return "[...]"
+
+        visited.add(id(obj))
+
+        if isinstance(obj, tuple):  # Handle tuples
+            return tuple(self.format_nested(item, visited) for item in obj)
+        elif isinstance(obj, list):  # Handle lists
+            return [self.format_nested(item, visited) for item in obj]
+        elif hasattr(obj, "__repr__"):  
+            return obj.__repr__()  
+        else:
+            return obj
+
     def __repr__(self):
         if not self.__isNode:
             tval = []
             for elem in self.__values:
                 tval.append([val.give_val() for val in elem])
-                
             return f"List_CP(name : {self._Value_P__name}, values : {tval})"
         else:
-            return f"List_CP(name : {self.name}, values : {self.children})"
+            formated_Children=self.format_nested(self.children)
+            return f"List_CP(name : {self.name}, values : {formated_Children})"
         
     def size(self):
         '''

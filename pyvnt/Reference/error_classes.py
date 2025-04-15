@@ -114,3 +114,23 @@ class VersionError(Exception):
         return f"Version {self.version} does not match supported version"
 
 
+
+
+
+class ParserError(Exception):
+    """Custom Exception for Parser Errors."""
+    
+    def __init__(self, message, lineno=None, column=None):
+        self.message = message
+        self.lineno = lineno
+        self.column = column
+        super().__init__(self.__str__())
+    
+    def __str__(self):
+        error_msg = f"Syntax Error: {self.message}"
+        if self.lineno is not None:
+            error_msg += f" at line {self.lineno}"
+        if self.column is not None:
+            error_msg += f", column {self.column}"
+        return error_msg
+

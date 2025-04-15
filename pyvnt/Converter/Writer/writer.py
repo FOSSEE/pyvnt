@@ -18,6 +18,7 @@ def writeTo(root, path,fileType='txt'):
     Parameters:
         Node_C: Dictionary object to be written
         path: Path to the file where the dictionary object is to be written
+        fileType: default txt supported txt and yaml
 
     '''
     file_name = root.name
@@ -51,7 +52,7 @@ def writeTo(root, path,fileType='txt'):
 
 def write_out(obj, file, indent = 0, list_in_key = False):
     '''
-    Function to write the current object to the file
+    Function to write the current object to the file text formate
 
     Parameters:
         file: File object to write the object to
@@ -110,7 +111,7 @@ def write_out(obj, file, indent = 0, list_in_key = False):
                 file.write("\n")
 
             make_indent(file, indent)
-            file.write(")\n")
+            file.write(");\n")
 
         elif list_in_key:
             make_indent(file, indent)
@@ -143,7 +144,7 @@ def write_out(obj, file, indent = 0, list_in_key = False):
 
 def write_out_Yaml(obj, file, indent = 0, list_in_key = False,parent_list_node=False):
     '''
-    Function to write the current object to the file
+    Function to write the current object to the file yaml formate
 
     Parameters:
         file: File object to write the object to
@@ -170,7 +171,6 @@ def write_out_Yaml(obj, file, indent = 0, list_in_key = False,parent_list_node=F
     
     elif type(obj) == Key_C: # If object is a key
         last_elem = list(obj.get_keys())[-1]
-        # print(str(indent)+"     "+str(obj.name))
         make_indent(file, indent)
         if len(list(obj.get_keys())) == 1 and type(list(obj.get_items())[0][1]) == List_CP:
             file.write(f"{obj.name}: ")
@@ -193,7 +193,7 @@ def write_out_Yaml(obj, file, indent = 0, list_in_key = False,parent_list_node=F
                 write_out_Yaml(child, file, indent+1,parent_list_node=True)
 
 
-        elif list_in_key:
+        elif list_in_key: # If there is any list in key 
             for elem in obj.get_elems():
                 if not elem:
                     file.write("[]")
