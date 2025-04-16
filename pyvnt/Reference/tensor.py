@@ -2,7 +2,10 @@ from pyvnt.Reference.basic import *
 from pyvnt.Reference.error_classes import InvalidTupleError
 from pyvnt.Reference.vector import Vector_P
 import numpy as np
-from typing import Self
+from typing import TypeVar
+Self = TypeVar("Self", bound="Tensor_P") # Cause python version < 3.11 dont support Self as in built function
+import math
+
 
 class Tensor_P(Value_P):
     '''

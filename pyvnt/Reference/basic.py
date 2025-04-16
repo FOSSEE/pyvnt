@@ -21,8 +21,6 @@ class Value_P(ABC):
     def instance_restricted(self):
         pass
 
-
-
 class Int_P(Value_P):
     '''
     Property class to store integer values
@@ -110,8 +108,6 @@ class Int_P(Value_P):
         Function to write the object to a file
         '''
         file.write(f"{self.__default}")
-
-
 
 class Flt_P(Value_P):
     '''
@@ -202,8 +198,6 @@ class Flt_P(Value_P):
         '''
         file.write(f"{self.__default}")
 
-
-
 class Str_P(Value_P): # for testing purposes only, to be scrapped
     '''
     Property class to store string values
@@ -243,7 +237,6 @@ class Str_P(Value_P): # for testing purposes only, to be scrapped
 
     def __repr__(self):
         return f"Str_P(name = {self._Value_P__name}, default = '{self.__default}')"
-
 
 class Enm_P(Value_P):
     '''

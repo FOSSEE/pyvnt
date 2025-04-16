@@ -1,7 +1,8 @@
-from pyvnt.Reference.basic import * 
-from typing import Self
-import math
 
+from pyvnt.Reference.basic import * 
+from typing import TypeVar
+import math
+Self = TypeVar("Self", bound="Vector_P")  # Replace 'YourClass' with your actual class name
 class Vector_P(Value_P):
     '''
     Property Class to store vector values 

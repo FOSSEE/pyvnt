@@ -88,7 +88,6 @@ class Node_C(NodeMixin):
         '''
         return self.data
     
-
     def set_Parent(self, node):
         '''
         Function to set the parent node to the current node
@@ -180,5 +179,3 @@ class Node_C(NodeMixin):
 
         make_indent(file, indent)
         file.write("}\n")
-
-
