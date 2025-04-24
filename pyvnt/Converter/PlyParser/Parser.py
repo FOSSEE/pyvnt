@@ -49,6 +49,7 @@ This is the basic parser which works on our custom datatypes
 Todo: Add macros and code block supports 
       Currently Handling string as enum
       Implementation of tensor pending
+      $asa; this pending
 '''
 
 class _OpenFoamParserInternalText:
@@ -56,6 +57,7 @@ class _OpenFoamParserInternalText:
     # Basic Tokens 
     tokens = (
                 'WORD', 
+                'WORD_WITH_PAREN',
                 'NUMBER',
                 'LBRACE',
                 'RBRACE',
@@ -98,8 +100,53 @@ class _OpenFoamParserInternalText:
         pass
 
     def t_WORD(self,t):
-        r'[a-zA-Z_][+\-<>(),.\*|a-zA-Z_0-9&%:]*'
-        return t
+        r'[a-zA-Z_][a-zA-Z0-9_]*'
+        word_part = t.value
+        current_pos_after_word = t.lexer.lexpos # Position *after* the  word
+        input_stream = t.lexer.lexdata
+
+        # Check if the character immediately after the word is an opening parenthesis
+        if current_pos_after_word < len(input_stream) and input_stream[current_pos_after_word] == '(':
+            paren_balance = 1
+            manual_pos = current_pos_after_word + 1
+            consumed_string = word_part + '('
+
+            # Manually scan forward until parentheses are balanced 
+            while manual_pos < len(input_stream) and paren_balance > 0:
+                char = input_stream[manual_pos]
+                consumed_string += char
+                if char == '(':
+                    paren_balance += 1
+                elif char == ')':
+                    paren_balance -= 1
+
+                # Check for allowed character 
+                allowed_inside = ",()_+-*/<>|:&%." 
+
+                if not (char.isalnum() or char in allowed_inside):
+                     # Found a character not allowed inside
+                     print(f"Warning: Invalid character '{char}' found inside potential complex token at {t.lineno}:{self.get_column(input_stream, manual_pos)}.")
+                     t.value = word_part
+                     t.lexer.lexpos = current_pos_after_word # Set lexer position after the simple word
+                     return t
+
+                manual_pos += 1 # Move to the next character
+                
+            if paren_balance == 0:
+                # Successfully found balanced parentheses
+                t.value = consumed_string
+                t.lexer.lexpos = manual_pos # Advance lexer position past the entire match
+                return t
+            else:
+                 # Loop finished, but parentheses are NOT balanced
+                 print(f"Warning: Unbalanced parentheses in potential complex token starting at {t.lineno}:{t.lexpos - len(word_part)}. Reached EOF.")
+                 t.value = word_part
+                 t.lexer.lexpos = current_pos_after_word
+                 return t
+
+        else:
+            t.value = word_part
+            return t
 
     def t_NUMBER(self,t):
         r'-?\d+(\.\d+)?([eE][-+]?\d+)?'
@@ -170,7 +217,7 @@ class _OpenFoamParserInternalText:
         '''block : dictionary
                 | listblock
                 | statement
-                | hex_item
+                | hexEdge_items
                 | coordlists
                 | empty'''
         p[0] = p[1] # Just returns the object 
@@ -179,35 +226,51 @@ class _OpenFoamParserInternalText:
         '''listblock : WORD LPAREN blocks RPAREN SEMICOLON'''
         if isinstance(p[3][0],list): # if its item in list is list returns key_c with data list_cp
             i=0
-            for coord in p[3][0]:
-                coord._Value_P__name=f"v{i}"
-                i+=1
-            p[0]=Key_C(p[1],List_CP(p[1],elems=[p[3][0]]))
+            if p[3][0] and isinstance(p[3][0][0],list):
+                for items in p[3][0]:
+                    for item in items:
+                        item._Value_P__name=f"v{i}"
+                        i+=1
+                p[0]= Key_C(p[1],List_CP(p[1],elems=p[3][0]))
+            else:
+                for items in p[3][0]:
+                    items._Value_P__name=f"v{i}"
+                    i+=1
+                p[0]=Key_C(p[1],List_CP(p[1],elems=[p[3][0]]))
         elif isinstance(p[3][0],Node_C): # If any item is Node_c means List_cp is node 
             p[0]=List_CP(p[1],values=p[3],isNode=True)
 
-    def p_coodlists(self,p):
+    def p_coodlists(self,p): # return [[],[]]
         '''coordlists : coordlists coodlist
                     | coodlist
         '''
-        
+        if len(p)==3:
+            p[0]=p[1]+[[p[2]]]
+        else:
+            p[0]=[[p[1]]]
+
+    def p_coordlist(self,p):
+        '''
+        coodlist : LPAREN anylist RPAREN
+        '''
+        p[0]=List_CP("v", elems=[p[2]])
+
+    def p_hexEdge_items(self,p):
+        '''hexEdge_items : hexEdge_items hexEdge_item
+                        | hexEdge_item
+        '''
         if len(p)==3:
             p[0]=p[1]+[p[2]]
         else:
             p[0]=[p[1]]
 
-    def p_coordlist(self,p):
-        '''
-        coodlist : LPAREN NUMBER NUMBER NUMBER RPAREN
-                | LPAREN NUMBER NUMBER NUMBER NUMBER RPAREN
-        '''
-        if len(p)==6:
-            p[0]=List_CP("v", elems=[[Flt_P('x', p[2]), Flt_P('y', p[3]), Flt_P('z', p[4])]])
-        else:
-            p[0]=List_CP("v", elems=[[Flt_P('x', p[2]), Flt_P('y', p[3]), Flt_P('z', p[4]),Flt_P('k', p[5])]])
+    def p_hexEdge_item(self,p):
+        '''hexEdge_item : hex_item 
+                        | edge_item'''
+        p[0]=p[1]
 
     def p_hex_item(self,p):
-        '''hex_item : WORD LPAREN NUMBER NUMBER NUMBER NUMBER NUMBER NUMBER NUMBER NUMBER RPAREN LPAREN  NUMBER NUMBER NUMBER RPAREN WORD LPAREN  NUMBER NUMBER NUMBER RPAREN'''
+        '''hex_item : WORD LPAREN NUMBER NUMBER NUMBER NUMBER NUMBER NUMBER NUMBER NUMBER RPAREN LPAREN NUMBER NUMBER NUMBER RPAREN word gradlist'''
         p[0]=[Enm_P("type", {p[1]}, p[1]),
                 List_CP("faces", elems=[[
                     Int_P("v0", p[3]),
@@ -223,14 +286,26 @@ class _OpenFoamParserInternalText:
                     Int_P("nx", p[13]),
                     Int_P("ny", p[14]),
                     Int_P("nz", p[15])
-                ]]),
-                Enm_P("grading", {"simpleGrading"}, "simpleGrading"),
-                List_CP("simpleGrading", elems=[[
-                    Int_P("x", p[19]),
-                    Int_P("y", p[20]),
-                    Int_P("z", p[21])
-                ]])]
+                ]])]+[p[17]]
+        if isinstance(p[18][0],list):
+            p[0]+=[List_CP("litsarr",elems=p[18])]
+        else:
+            p[0]+=p[18]
         
+        
+    def p_edge_item(self,p):
+        '''edge_item : WORD number number gradlist'''
+        p[0]=[Enm_P("type", {p[1]}, p[1]),p[2],p[3]]+p[4]
+    
+    def p_gradelist(self,p): # return [[],[]] for list_CP elems=[[]]
+        '''gradlist : coodlist 
+                    | LPAREN coordlists RPAREN
+        '''
+        if len(p)==2:
+            p[0]=[p[1]]
+        else:
+            p[0]=p[2]
+
     def p_dictionary(self,p):
         '''dictionary : WORD LBRACE blocks RBRACE'''
         node = Node_C(p[1])
@@ -261,8 +336,9 @@ class _OpenFoamParserInternalText:
         '''
         sitem : word
             | number
-            | vector
             | dimension
+            | vector
+            | empty
         '''
         p[0]=p[1]
 
@@ -276,13 +352,10 @@ class _OpenFoamParserInternalText:
         '''
         number : NUMBER
         '''
-        max=1e5
-        min=0
-        if p[1]>max:
-            max=p[1]
-        if p[1]<min:
-            min=p[1]
-        p[0]=Flt_P("value",default=p[1],maximum=max,minimum=min)
+        if isinstance(p[1],int):
+            p[0]=Int_P("value",default=p[1],maximum=max(100000,p[1]),minimum=min(0,p[1]))
+        else:
+            p[0]=Flt_P("value",default=p[1],maximum=max(1e5,p[1]),minimum=min(0,p[1]))
 
     def p_vector(self,p):
         '''
@@ -591,3 +664,4 @@ class OpenFoamParser:
             if not found:
                 return None  # Return None if any key in the Parsed Tree is not found
         return result
+
