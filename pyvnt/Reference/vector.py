@@ -2,7 +2,7 @@
 from pyvnt.Reference.basic import * 
 from typing import TypeVar
 import math
-Self = TypeVar("Self", bound="Vector_P")  # Replace 'YourClass' with your actual class name
+Self = TypeVar("Self", bound="Vector_P") # Cause python version < 3.11 dont support Self as in built function
 class Vector_P(Value_P):
     '''
     Property Class to store vector values 

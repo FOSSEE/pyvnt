@@ -117,7 +117,7 @@ class TestOpenFoamParser:
         vertices = parser.get_value(tt, "vertices")
         assert isinstance(vertices, Key_C)
         assert not isinstance(vertices, Node_C)
-        assert len(list(vertices.get_items())[0][1].get_elems()[0]) == 8
+        assert len(list(vertices.get_items())[0][1].get_elems()) == 8
 
     def test_list_of_dicts(self, parser):
         tt = parser.parse_file(path=str(DICT_PATH / "nodeList"))
@@ -190,3 +190,13 @@ class TestOpenFoamParser:
         key6_list = parser.get_value(tt, "key6")
         assert isinstance(key6_list, Key_C)
         assert isinstance(list(key6_list.get_items())[0][1], List_CP)
+
+    def test_fvSchemes(self, parser):
+        tt = parser.parse_file(path=str(DICT_PATH / "fvSchemes"))
+        dd = parser.parse_file(path=str(DICT_PATH/"listnode"))
+        assert [name.name for name in tt._ordered_items]==['FoamFile', 'ddtSchemes', 'gradSchemes', 'divSchemes', 'laplacianSchemes']
+        assert [name.name for name in dd._ordered_items]==['key1', 'FoamFile', 'blocks', 'key2', 'boundary']
+        assert list(parser.get_value(dd,'boundary','movingWall','faces').get_items())[0][1].get_elems()[0][0]==List_CP('v0',elems=[[Int_P("value", default = 3, minimum = 0, maximum = 100000), 
+                                                                                                                                    Int_P("value", default = 7, minimum = 0, maximum = 100000), 
+                                                                                                                                    Int_P("value", default = 6, minimum = 0, maximum = 100000), 
+                                                                                                                                    Int_P("value", default = 2, minimum = 0, maximum = 100000)]])
