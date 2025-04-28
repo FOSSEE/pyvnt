@@ -30,10 +30,11 @@ def writeTo(root, path,fileType='txt'):
 
         with open(path + f"\\{file_name}.txt", "w") as file: # Creates a file with the same name as the root node
             print(path )
-            for d in root.get_data():
-                write_out(d, file)
+            # for d in root.get_data():
+            #     write_out(d, file)
             
-            for child in root.children:
+            # for writing filr in ordered way
+            for child in root.get_ordered_items():
                 write_out(child, file)
                 file.write("\n")
     elif fileType=='yaml':
@@ -60,17 +61,19 @@ def write_out(obj, file, indent = 0, list_in_key = False):
 
     '''
 
+    '''
+    TODO: need to fix this nested list or vectorv in list file write ( (11, 55, 77) (11, 1, 77) ) -> ( (11 55 77) (11 1 77) )
+    '''
+
     if type(obj) == Node_C: # If object is a node
         make_indent(file, indent)
         file.write(f"{obj.name}\n")
         make_indent(file, indent)
         file.write("{\n")
 
-        for d in obj.get_data():
-            write_out(d, file, indent+1)
-        
-        for child in obj.children:
-            write_out(child, file, indent+1)
+        # for writing filr in ordered way
+        for child in obj.get_ordered_items():
+            write_out(child, file,indent+1)
             file.write("\n")
 
         make_indent(file, indent)

@@ -21,23 +21,31 @@ file : blocks
 
 blocks : blocks block | block
 
-block : dictionary | listblock | statement | hex_item | coordlists | empty
+block : dictionary | listblock | statement | hexEdge_items | coordlists | empty
 
 dictionary : WORD LBRACE blocks RBRACE
 
 listblock : WORD LPAREN blocks RPAREN SEMICOLON
 
-hex_item : WORD LPAREN NUMBER NUMBER NUMBER NUMBER NUMBER NUMBER NUMBER NUMBER RPAREN LPAREN  NUMBER NUMBER NUMBER RPAREN WORD LPAREN  NUMBER NUMBER NUMBER RPAREN
+hexEdge_items : hexEdge_items hexEdge_item | hexEdge_item
+
+hexEdge_item : hex_item | edge_item
+
+hex_item : WORD LPAREN NUMBER NUMBER NUMBER NUMBER NUMBER NUMBER NUMBER NUMBER RPAREN LPAREN NUMBER NUMBER NUMBER RPAREN word gradlist
+
+edge_item : WORD number number gradlist
+
+gradlist : coodlist | LPAREN coordlists RPAREN
 
 coordlists : coordlists coodlist | coodlist
 
-coodlist : LPAREN NUMBER NUMBER NUMBER RPAREN | LPAREN NUMBER NUMBER NUMBER NUMBER RPAREN
+coodlist : LPAREN anylist RPAREN
 
 statement : WORD anylist SEMICOLON
 
 anylist : anylist sitem | sitem
 
-sitem : word | number | vector | dimension
+sitem : word | number | dimension | vector | empty
 
 vector : LPAREN NUMBER NUMBER NUMBER RPAREN
 
@@ -292,12 +300,11 @@ class _OpenFoamParserInternalText:
         else:
             p[0]+=p[18]
         
-        
     def p_edge_item(self,p):
         '''edge_item : WORD number number gradlist'''
         p[0]=[Enm_P("type", {p[1]}, p[1]),p[2],p[3]]+p[4]
     
-    def p_gradelist(self,p): # return [[],[]] for list_CP elems=[[]]
+    def p_gradelist(self,p):
         '''gradlist : coodlist 
                     | LPAREN coordlists RPAREN
         '''
@@ -305,6 +312,7 @@ class _OpenFoamParserInternalText:
             p[0]=[p[1]]
         else:
             p[0]=p[2]
+        # return [[],[]] 
 
     def p_dictionary(self,p):
         '''dictionary : WORD LBRACE blocks RBRACE'''
@@ -361,7 +369,7 @@ class _OpenFoamParserInternalText:
         '''
         vector : LPAREN NUMBER NUMBER NUMBER RPAREN
         '''
-        p[0]=Vector_P("value",Flt_P("int_prop",default=p[2]),Flt_P("int_prop",default=p[3]),Flt_P("int_prop",default=p[4]))
+        p[0]=Vector_P("value",Flt_P("x",default=p[2]),Flt_P("y",default=p[3]),Flt_P("z",default=p[4]))
 
     def p_dimension(self,p):
         '''
@@ -664,4 +672,3 @@ class OpenFoamParser:
             if not found:
                 return None  # Return None if any key in the Parsed Tree is not found
         return result
-

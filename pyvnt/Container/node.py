@@ -12,6 +12,13 @@ Criteria for classes:
 3. the attributed should not be accesible through . operator -- done by name mangling(__var)
 '''
 
+'''
+Why we implement _ordered_items : In a node we can add key-value and dictionaries and the order can be anything as
+                                  dictionaries then data. So only node is one where we are handling data and dictionaries 
+                                  both .Whereas in other we can just chnage the sequence of data or child(in list node) as 
+                                  way we add them .
+'''
+
 class Node_C(NodeMixin):
     """
     Class to define nodes of the tree
@@ -39,6 +46,16 @@ class Node_C(NodeMixin):
 
         if children:
             self.children = children
+
+        # for Writing in order 
+        self._ordered_items = []
+
+        for item in self.data:
+            if item not in self._ordered_items: # Avoid duplicates if init is complex
+                self._ordered_items.append(item)
+        for item in self.children:
+            if item not in self._ordered_items:
+                self._ordered_items.append(item)
     
     
     def __getattr__(self, key):
@@ -70,6 +87,41 @@ class Node_C(NodeMixin):
     #         print(treestr.ljust(8), s)
     
 
+
+    # helper Function for seting _ordered_items 
+    def set_order(self, names_list):
+        """Reorders _ordered_items based on a list of names."""
+        new_ordered_items = []
+        current_item_map = {}
+        all_current_items = self.data + list(self.children)
+        for item in all_current_items:
+            name = getattr(item, 'name', None)
+            if name is not None:
+                 current_item_map[name] = item
+
+        processed_items = set()
+        for name in names_list:
+            item_ref = current_item_map.get(name)
+            if item_ref is not None:
+                new_ordered_items.append(item_ref)
+                processed_items.add(name)
+            else:
+                print(f"Warning: Name '{name}' in set_order not found in node '{self.name}'.")
+
+        for item_ref in self._ordered_items:
+             if getattr(item_ref, 'name', None) not in processed_items:
+                 new_ordered_items.append(item_ref)
+
+        self._ordered_items = new_ordered_items
+
+    def get_ordered_items(self):
+        """Returns an iterator over the items (references) in the desired order."""
+        return list(self._ordered_items)
+
+
+
+
+
     def add_child(self, node):
         '''
         Function to add a child node to the current node
@@ -78,6 +130,8 @@ class Node_C(NodeMixin):
             node: Node object to be added as a child
         '''
         self.children += (node, )
+        self._ordered_items.append(node)
+        
     
     def get_data(self):
         '''
@@ -122,6 +176,8 @@ class Node_C(NodeMixin):
             self.data.insert(pos, data)
         else:
             self.data.append(data)
+            
+        self._ordered_items.append(data)
     
     def remove_data(self, data: Key_C):
         '''
