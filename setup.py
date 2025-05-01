@@ -21,7 +21,7 @@ setup(
     # py_modules=['pyvnt'],
     include_package_data=True,
     # package_data={'': ['./pyvnt/Converter/cpp_src/dictionaryFile/lib/dictionaryFile.so', './pyvnt/Converter/cpp_src/dictionaryFileIterator/lib/dictionaryFileIterator.so']},
-    install_requires=['anytree', 'dataclasses'],
+    install_requires=['anytree', 'dataclasses','ply','pyyaml'],
     keywords=['python'],
     classifiers=[
         "Development Status :: 1 - Planning",
