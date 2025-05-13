@@ -129,18 +129,20 @@ def write_out(obj, file, indent = 0, list_in_key = False):
             file.write(")")
             
         else:
-            res = "( "
+            # res = "( "
+            file.write('( ')
             for elem in obj.get_elems():
                 for val in elem:
-                    res = res + f"{val.give_val()} "
-            res += ")"
-            file.write(res)
+                    write_out(val, file)
+                    file.write(" ")
+            file.write(')')
+            # file.write(res)
     
-    elif type(obj) == Int_P or type(obj) == Flt_P or type(obj) ==  Enm_P or type(obj) == Vector_P or type(obj) == Tensor_P : # If object is a property
-        file.write(f"{obj.give_val()}")
+    elif type(obj) in (Int_P , Flt_P , Enm_P , Vector_P, Tensor_P,Dim_Set_P) :
+        obj.write_out(file)
     
-    elif type(obj) == Dim_Set_P: # special case for dimension set
-        file.write(" ".join(i for i in str(obj.give_val()).split(",")))
+    # elif type(obj) == Dim_Set_P: # special case for dimension set
+    #     file.write(" ".join(i for i in str(obj.give_val()).split(",")))
     
     else:
         raise ValueError(f"Object of type {type(obj)} not supported for writing out to file")

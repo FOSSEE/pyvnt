@@ -90,7 +90,12 @@ class Dim_Set_P(Value_P):
         '''
         Returns the dimensions of the physical quantity.
         '''
-
         return self.__dimm
+    
+    def write_out(self, file):
+        '''
+        Returns the dimensions value in a string format
+        '''
+        file.write(" ".join(i for i in str(self.__dimm).split(",")))
 
     

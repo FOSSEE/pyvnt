@@ -58,6 +58,11 @@ Todo: Add macros and code block supports
       Currently Handling string as enum
       Implementation of tensor pending
       $asa; this pending
+      not able to parse snapyHexMeshFile like suzanne.stl{ .... }
+                                                key=R    values= tang ,((0 3 2 1)(4 5 6 7));
+    
+      Improvement of Yamle parser/writer is needed a as for list [[],[]] type 
+
 '''
 
 class _OpenFoamParserInternalText:
@@ -87,7 +92,7 @@ class _OpenFoamParserInternalText:
     t_RPAREN=r'\)'
     t_LSQUABRAC=r'\['
     t_RSQUABRAC=r'\]'
-    t_ignore = ' \t,"'
+    t_ignore = ' \t,'
 
     def __init__(self):
         self.lexer = lex.lex(module=self)
@@ -108,7 +113,12 @@ class _OpenFoamParserInternalText:
         pass
 
     def t_WORD(self,t):
-        r'[a-zA-Z_][a-zA-Z0-9_]*'
+        r'"[^"]*"|[a-zA-Z_][a-zA-Z0-9_]*'
+
+        if t.value.startswith('"') and t.value.endswith('"'):
+            t.value = t.value[1:-1].strip()
+            return t
+
         word_part = t.value
         current_pos_after_word = t.lexer.lexpos # Position *after* the  word
         input_stream = t.lexer.lexdata
@@ -474,6 +484,7 @@ class _OpenFoamParserInternalYaml:
 
         # Process individual items in the list
         processed_items = [self.process_list_item(item) for item in values]
+        # print("This is the valuese wee got is this list == " + str(isinstance(processed_items[0],list)))
         
         return Key_C(str(key),List_CP(key, elems=[processed_items]))
 
@@ -592,7 +603,7 @@ class OpenFoamParser:
             path (str): The path to the file. Defaults to None.
 
         Returns:
-            The parsed object structure or None if the file is invalid.
+            The parsed object structure(Node tree) or None if the file is invalid.
         """
         if path!=None:
             ext = os.path.splitext(path)[1]

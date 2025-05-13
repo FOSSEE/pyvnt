@@ -310,7 +310,6 @@ class List_CP(Value_P, NodeMixin):
         for elem in self.__values:
             for val in elem:
                 res = res + (val.give_val(),)
-
         return res
     
     def get_elems(self):
@@ -361,12 +360,14 @@ class List_CP(Value_P, NodeMixin):
             file.write(")")
             
         else:
-            res = "( "
+            
+            file.write('(')
             for elem in self.__values:
                 for val in elem:
-                    res = res + f"{val.give_val()} "
-            res += ")"
-            file.write(res)
+                    val.write_out(file)
+                    file.write(" ")
+            # res += ")"
+            file.write(')')
     
     def __eq__(self, other):
         return self.give_val() == other.give_val()
