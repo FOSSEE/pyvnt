@@ -483,10 +483,11 @@ class _OpenFoamParserInternalYaml:
         
 
         # Process individual items in the list
-        processed_items = [self.process_list_item(item) for item in values]
-        # print("This is the valuese wee got is this list == " + str(isinstance(processed_items[0],list)))
+        processed_items=[]
+        for item in values:
+            processed_items.append([self.process_list_item(item)])
         
-        return Key_C(str(key),List_CP(key, elems=[processed_items]))
+        return Key_C(str(key),List_CP(key, elems=processed_items))
 
     def process_list_item(self, item):
         """ Process list items 
@@ -499,7 +500,7 @@ class _OpenFoamParserInternalYaml:
         if isinstance(item, list): # If the item is a nested list
             elments=[]
             for val in item:
-                elments.append(self.strOrintOrfloat(val))
+                elments.append(self.process_list_item(val))
             return List_CP("V", elems=[elments])
         elif isinstance(item, str):
             return self.strOrintOrfloat(item)
