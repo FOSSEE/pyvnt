@@ -44,10 +44,8 @@ def writeTo(root, path,fileType='txt'):
 
         with open(path + f"\\{file_name}.yaml", "w") as file: # Creates a file with the same name as the root node
 
-            for d in root.get_data():
-                write_out_Yaml(d, file)
             
-            for child in root.children:
+            for child in root.get_ordered_items():
                 write_out_Yaml(child, file)
                 file.write("\n")
 
@@ -166,11 +164,8 @@ def write_out_Yaml(obj, file, indent = 0, list_in_key = False,parent_list_node=F
             file.write('- ')
             indent+=1
         file.write(f"{obj.name}:\n")
-        for d in obj.get_data():
+        for d in obj.get_ordered_items():
             write_out_Yaml(d, file, indent+1)
-        
-        for child in obj.children:
-            write_out_Yaml(child, file, indent+1)
 
         file.write("\n")
     
@@ -196,6 +191,7 @@ def write_out_Yaml(obj, file, indent = 0, list_in_key = False,parent_list_node=F
 
             for child in obj.children:
                 write_out_Yaml(child, file, indent+1,parent_list_node=True)
+            file.write("\n")
 
 
         elif list_in_key: # If there is any list in key 
@@ -208,7 +204,7 @@ def write_out_Yaml(obj, file, indent = 0, list_in_key = False,parent_list_node=F
                     make_indent(file,indent+1)
                     file.write('- ')
                     write_out_Yaml(val, file)
-                    file.write('\n')
+            file.write("\n")
             make_indent(file, indent)
             
         else:

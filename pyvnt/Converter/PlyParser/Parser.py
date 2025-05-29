@@ -183,7 +183,7 @@ class _OpenFoamParserInternalText:
 
     def p_file(self,p):
         '''file : blocks'''
-        node= Node_C("File")
+        node= Node_C("root")
         for value in p[1]: # Geting mixed list of (Key_C,Node_C,List_Cp)
             if isinstance(value,Key_C): # If key add to data in parent node
                 node.add_data(value)
