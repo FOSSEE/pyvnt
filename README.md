@@ -117,7 +117,6 @@ solvers
 
     pFinal
     {
-        $p;
         relTol          0;
     }
 

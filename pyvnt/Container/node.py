@@ -38,7 +38,6 @@ class Node_C(NodeMixin):
         self.name = name
 
         self.data = list(args)
-        
         if parent == None or parent.data == []:
             self.parent = parent
         else:
@@ -49,13 +48,46 @@ class Node_C(NodeMixin):
 
         # for Writing in order 
         self._ordered_items = []
+        
+        self._sync_ordered_items()
 
+    @property
+    def parent(self):
+        return super().parent
+
+    @parent.setter
+    def parent(self, new_parent_node):
+        old_parent_node = self.parent
+        if new_parent_node is not None and new_parent_node.data != []:
+            # This check prevents assigning self to a parent that already has data.
+            if old_parent_node != new_parent_node:
+                 raise LeafNodeError(self, f"Node '{self.name}' cannot be child of '{new_parent_node.name}' because parent has data.")
+        super(Node_C, self.__class__).parent.fset(self, new_parent_node)
+
+        if old_parent_node and old_parent_node != new_parent_node:
+            old_parent_node._sync_ordered_items()
+
+        if self.parent:
+            self.parent._sync_ordered_items()
+
+
+    def _sync_ordered_items(self):
+        """
+        Synchronizes self._ordered_items based on self.data and self.children.
+        """
+        new_ordered_items = []
         for item in self.data:
-            if item not in self._ordered_items: # Avoid duplicates if init is complex
-                self._ordered_items.append(item)
-        for item in self.children:
-            if item not in self._ordered_items:
-                self._ordered_items.append(item)
+            if item not in new_ordered_items:
+                new_ordered_items.append(item)
+
+        current_children = super(Node_C, self).children 
+        if current_children is not None:
+            for child_node in current_children:
+                if child_node not in new_ordered_items:
+                    new_ordered_items.append(child_node)
+        
+        self._ordered_items = new_ordered_items
+
     
     
     def __getattr__(self, key):
