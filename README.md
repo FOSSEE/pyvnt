@@ -610,7 +610,7 @@ tree  =  parser.parse_file(path=r"\cavity\system\blockMeshDict")
 
 foam_file_node  =  parser.get_value(tree, "FoamFile")
 if  foam_file_node:
-	show_tree(foam_file_node)=-'
+	show_tree(foam_file_node)
    
 
 # Get the 'class' Key_C from within 'FoamFile' Node_C

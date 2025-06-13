@@ -607,8 +607,8 @@ class OpenFoamParser:
             The parsed object structure(Node tree) or None if the file is invalid.
         """
         if path!=None:
-            ext = os.path.splitext(path)[1]
             filename=os.path.basename(path)
+            filename_root, ext = os.path.splitext(filename)
             if os.path.isfile(path):
                 with open(path, 'r') as tF:
                     text = tF.read()
@@ -619,7 +619,7 @@ class OpenFoamParser:
                 parsed=self._parseInternalText.parse(text)
             elif ext=='.yaml':
                 parsed=self._parseInternalYaml.parseYaml(text)
-            parsed.name=filename
+            parsed.name=filename_root
         elif text!=None:
             if text==None:
                 print("Please enter filetype")

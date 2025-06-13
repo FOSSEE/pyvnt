@@ -199,8 +199,9 @@ def write_out_Yaml(obj, file, indent = 0, list_in_key = False,parent_list_node=F
                 if not elem:
                     file.write("[]")
                     continue
-                file.write('\n')
+                # file.write('\n')
                 for val in elem:
+                    file.write('\n')
                     make_indent(file,indent+1)
                     file.write('- ')
                     write_out_Yaml(val, file)

@@ -4,8 +4,9 @@ from anytree import Node, RenderTree, AsciiStyle, NodeMixin
 from pyvnt.Reference.error_classes import SizeError, NoPlaceholdersError, NoValueError, KeyRepeatError
 from pyvnt.utils.make_indent import make_indent
 import warnings
+from pyvnt.Container.orderChildMixin import OrderedChildMixin
 
-class List_CP(Value_P, NodeMixin):
+class List_CP(OrderedChildMixin,Value_P, NodeMixin):
     '''
     A property that holds a list of elements.
 
@@ -37,7 +38,7 @@ class List_CP(Value_P, NodeMixin):
 
     '''
 
-    __slots__ = ['_Value_P__name', '_List_CP__values', '_List_CP__isNode']
+    # __slots__ = ['_Value_P__name', '_List_CP__values', '_List_CP__isNode']
 
     def __init__(self, 
              name: int, 
@@ -49,6 +50,8 @@ class List_CP(Value_P, NodeMixin):
              parent: Node_C = None):
     
         super(List_CP, self).__init__()
+        # Value_P.__init__(self)
+        # NodeMixin.__init__(self)
         self.__isNode = isNode
 
         if not self.__isNode:
@@ -256,9 +259,9 @@ class List_CP(Value_P, NodeMixin):
         Parameters:
             value: The Node_C object to be appended as a child.
         '''
-        current_children = list(self.children)
-        current_children.append(value)
-        self.children = tuple(current_children)
+        # print("Appending child ::  "+str(value.name))
+        self.children +=(value,)
+        # print(self.children)
 
     def format_nested(self,obj, visited=set()):
         """Helper function to safely format nested structures without infinite recursion."""
