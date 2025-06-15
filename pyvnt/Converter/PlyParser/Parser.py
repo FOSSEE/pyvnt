@@ -9,6 +9,8 @@ from pyvnt.Reference.dimension_set import *
 from pyvnt.utils.show_tree import *
 from pyvnt.Reference.vector import *
 from pyvnt.Reference.tensor import *
+import re
+import ast
 import os
 import yaml
 
@@ -438,7 +440,6 @@ class _OpenFoamParserInternalYaml:
     """
     def __init__(self):
         self.data=None
-        self.tt=None
 
     def traverse_dict(self, d, name="root"):
         """ Recursively build a tree structure from the dictionary 
@@ -486,7 +487,9 @@ class _OpenFoamParserInternalYaml:
         processed_items=[]
         for item in values:
             processed_items.append([self.process_list_item(item)])
-        
+        if processed_items ==[]:
+            processed_items=[[]]
+
         return Key_C(str(key),List_CP(key, elems=processed_items))
 
     def process_list_item(self, item):
@@ -497,7 +500,8 @@ class _OpenFoamParserInternalYaml:
         Returns:
             Processed representation of the item.
         """
-        if isinstance(item, list): # If the item is a nested list
+        # print("Processsing list item : "+str(item))
+        if isinstance(item, list) or item==[]: # If the item is a nested list
             elments=[]
             for val in item:
                 elments.append(self.process_list_item(val))
@@ -532,11 +536,16 @@ class _OpenFoamParserInternalYaml:
             Key_C: A key-value representation of the value.
         """
         key_obj = Key_C(str(key))
-        if isinstance(value, str):
-            for val in value.split():
-                key_obj.append_val(val, self.strOrintOrfloat(val))
-        elif isinstance(value, (float, int)):
-            key_obj.append_val("v", self.strOrintOrfloat(value))
+        if isinstance(value,str):
+            value=self.parse_openfoam_entries(value)
+            for i in value:
+                if isinstance(i,tuple):
+                    i=list(i)
+                i=self.process_list_item(i)
+                key_obj.append_val(i._Value_P__name,i)
+            return key_obj
+        val=self.process_list_item(value)
+        key_obj.append_val(val._Value_P__name,val)
         return key_obj
 
     def strOrintOrfloat(self,value):
@@ -571,6 +580,35 @@ class _OpenFoamParserInternalYaml:
             return Flt_P("v", val,minimum=min,maximum=max)
         elif isinstance(val,int):
             return Int_P("v", val,minimum=int(min),maximum=int(max))
+
+    def preprocess_openfoam_literals(self,s): # Replace space separated values inside brackets or parentheses with comma-separated values
+        def replacer(match):
+            open_bracket = match.group(1)
+            content = match.group(2)
+            close_bracket = match.group(3)
+            # Insert commas between elements
+            return f"{open_bracket}{', '.join(content.split())}{close_bracket}"
+        
+        # Regex matches either [ ... ] or ( ... )
+        pattern = r'(\[|\()([^\[\]\(\)]+)(\]|\))'
+        
+        # Replace all matches in the string
+        return re.sub(pattern, replacer, s)
+
+    def parse_openfoam_entries(self,s):
+        s_processed = self.preprocess_openfoam_literals(s)
+    
+        # Tokenize by matching lists, tuples, or other non-space sequences
+        tokens = re.findall(r'\[.*?\]|\(.*?\)|\S+', s_processed)
+        parsed = []
+        for token in tokens:
+            try:
+                # Safely evaluate Python literals
+                parsed.append(ast.literal_eval(token))
+            except Exception:
+                # If evaluation fails, keep as string
+                parsed.append(token)
+        return parsed
 
     def parseYaml(self,text:str):
         """

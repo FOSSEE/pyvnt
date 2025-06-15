@@ -175,20 +175,22 @@ def write_out_Yaml(obj, file, indent = 0, list_in_key = False,parent_list_node=F
         if len(list(obj.get_keys())) == 1 and type(list(obj.get_items())[0][1]) == List_CP:
             file.write(f"{obj.name}: ")
             for key, val in obj.get_items():
-                write_out_Yaml(val, file, indent, True)
+                write_out_Yaml(val, file, indent, list_in_key=True)
         else:
             file.write(f"{obj.name}: ")
+            file.write("\"")
             for key, val in obj.get_items():
                 write_out_Yaml(val, file)
                 if key != last_elem:
                     file.write(" ")
+            file.write("\"")
+                
         file.write("\n")
 
     elif type(obj) == List_CP: # If object is a list
         if obj.is_a_node():
             make_indent(file, indent)
             file.write(f"{obj.name}:\n")
-
             for child in obj.children:
                 write_out_Yaml(child, file, indent+1,parent_list_node=True)
             file.write("\n")
@@ -209,15 +211,22 @@ def write_out_Yaml(obj, file, indent = 0, list_in_key = False,parent_list_node=F
             make_indent(file, indent)
             
         else:
-            res = "[ "
+            def format_value(val_obj):
+                t = val_obj.give_val()
+                if isinstance(t, tuple):
+                    t = list(t)
+                return str(t)
+            elements_strings = []
             for elem in obj.get_elems():
-                i=0
+                formated_value=[]
                 for val in elem:
-                    if i==1:
-                        res+=','
-                    res = res + f"{val.give_val()} "
-                    i=1
-            res += "]"
+                    t = val.give_val()
+                    if isinstance(t, tuple):
+                        t = list(t)
+                    formated_value.append(str(t))
+                elements_strings.append(", ".join(formated_value))
+
+            res = "[ " + ", ".join(elements_strings) + " ]"
             file.write(res)
     
     elif type(obj) == Int_P or type(obj) == Flt_P or type(obj) ==  Enm_P or type(obj) == Vector_P or type(obj) == Tensor_P : # If object is a property

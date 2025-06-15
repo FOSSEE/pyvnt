@@ -38,7 +38,7 @@ class List_CP(OrderedChildMixin,Value_P, NodeMixin):
 
     '''
 
-    # __slots__ = ['_Value_P__name', '_List_CP__values', '_List_CP__isNode']
+    __slots__ = ['_Value_P__name', '_List_CP__values', '_List_CP__isNode']
 
     def __init__(self, 
              name: int, 
@@ -234,8 +234,10 @@ class List_CP(OrderedChildMixin,Value_P, NodeMixin):
             elem: The element to be appended.
         '''
         self.check_type(values = elem)
-
-        self.__values.append(elem)
+        if self.__values == [[]]:
+            self.__values = [elem]
+        else:
+            self.__values.append(elem)
     
     def append_uniq_elem(self, elem: [Value_P]):
         '''
@@ -245,6 +247,11 @@ class List_CP(OrderedChildMixin,Value_P, NodeMixin):
             elem: The element to be appended.
         '''
         self.check_type(values = elem)
+
+        if self.__values == [[]]:
+            self.__values = [elem]
+            return
+
 
         if elem not in self.__values:
             self.__values.append(elem)
