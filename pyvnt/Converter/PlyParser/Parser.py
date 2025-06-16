@@ -72,7 +72,6 @@ class _OpenFoamParserInternalText:
     # Basic Tokens 
     tokens = (
                 'WORD', 
-                'WORD_WITH_PAREN',
                 'NUMBER',
                 'LBRACE',
                 'RBRACE',
@@ -114,6 +113,7 @@ class _OpenFoamParserInternalText:
         t.lexer.lineno+=1
         pass
 
+    # TODO: Find Better approch for t_WORD (like we can make ast but its too over cooked)
     def t_WORD(self,t):
         r'"[^"]*"|[a-zA-Z_][a-zA-Z0-9_]*'
 
@@ -141,7 +141,7 @@ class _OpenFoamParserInternalText:
                     paren_balance -= 1
 
                 # Check for allowed character 
-                allowed_inside = ",()_+-*/<>|:&%." 
+                allowed_inside = ",()_+-*/<>|:&%. " 
 
                 if not (char.isalnum() or char in allowed_inside):
                      # Found a character not allowed inside
@@ -159,10 +159,9 @@ class _OpenFoamParserInternalText:
                 return t
             else:
                  # Loop finished, but parentheses are NOT balanced
-                 print(f"Warning: Unbalanced parentheses in potential complex token starting at {t.lineno}:{t.lexpos - len(word_part)}. Reached EOF.")
                  t.value = word_part
                  t.lexer.lexpos = current_pos_after_word
-                 return t
+                 raise ParserError("Unbalanced parentheses",t.lineno,t.lexpos - len(word_part))
 
         else:
             t.value = word_part
@@ -174,8 +173,14 @@ class _OpenFoamParserInternalText:
         return t
 
     def t_error(self,t):
-        print(f"Illegal character '{t.value[0]}'")
-        t.lexer.skip(1)
+        # print(f"Illegal character '{t.value[0]}'")
+        # t.lexer.skip(1)
+        column = self.get_column(t.lexer.lexdata, t.lexpos)
+        raise ParserError(
+            f"Illegal character '{t.value[0]}'",
+            lineno=t.lineno,
+            column=column
+        )
 
     # Parsing rules
 
@@ -334,6 +339,11 @@ class _OpenFoamParserInternalText:
                 node.add_data(value)
             elif isinstance(value,Node_C):
                 node.add_child(value)
+            elif isinstance(value,List_CP):
+                if value.is_a_node():
+                    node.add_child(value)
+            else:
+                raise ParserError(f"Unexpected block type {type(value)} found in dictionary '{p[1]}'.")
         p[0]=node
 
     def p_statement(self,p):
@@ -474,6 +484,9 @@ class _OpenFoamParserInternalYaml:
         Returns:
             Key_C or List_CP: A processed representation of the list.
         """
+        if not values:
+            Key_C(str(key),List_CP(key, elems=[[]]))
+            
         if any(isinstance(v, dict) for v in values): # Check if the list contains dictionaries
             dict_list = [self.traverse_dict(sub_value, sub_key) for v in values for sub_key,sub_value in v.items()]
             return List_CP(key, values=dict_list, isNode=True)
@@ -502,13 +515,14 @@ class _OpenFoamParserInternalYaml:
         """
         # print("Processsing list item : "+str(item))
         if isinstance(item, list) or item==[]: # If the item is a nested list
-            elments=[]
+            elements=[]
             for val in item:
-                elments.append(self.process_list_item(val))
-            return List_CP("V", elems=[elments])
-        elif isinstance(item, str):
-            return self.strOrintOrfloat(item)
-        elif isinstance(item, (float, int)):
+                elements.append(self.process_list_item(val))
+            if self.check_list(elements,(int,float),7):
+                dim_values = [e.get_value(e.name) for e in elements]
+                return Dim_Set_P("dim_set", dim_values)
+            return List_CP("V", elems=[elements])
+        elif isinstance(item, (str, float, int)):
             return self.strOrintOrfloat(item)
         return item
 

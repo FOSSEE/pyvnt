@@ -167,7 +167,7 @@ def write_out_Yaml(obj, file, indent = 0, list_in_key = False,parent_list_node=F
         for d in obj.get_ordered_items():
             write_out_Yaml(d, file, indent+1)
 
-        file.write("\n")
+        # file.write("\n")
     
     elif type(obj) == Key_C: # If object is a key
         last_elem = list(obj.get_keys())[-1]
@@ -193,7 +193,7 @@ def write_out_Yaml(obj, file, indent = 0, list_in_key = False,parent_list_node=F
             file.write(f"{obj.name}:\n")
             for child in obj.children:
                 write_out_Yaml(child, file, indent+1,parent_list_node=True)
-            file.write("\n")
+            # file.write("\n")
 
 
         elif list_in_key: # If there is any list in key 
@@ -211,11 +211,6 @@ def write_out_Yaml(obj, file, indent = 0, list_in_key = False,parent_list_node=F
             make_indent(file, indent)
             
         else:
-            def format_value(val_obj):
-                t = val_obj.give_val()
-                if isinstance(t, tuple):
-                    t = list(t)
-                return str(t)
             elements_strings = []
             for elem in obj.get_elems():
                 formated_value=[]
@@ -237,3 +232,4 @@ def write_out_Yaml(obj, file, indent = 0, list_in_key = False,parent_list_node=F
     
     else:
         raise ValueError(f"Object of type {type(obj)} not supported for writing out to file")
+    

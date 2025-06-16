@@ -366,132 +366,75 @@ YAML is increasingly used for its readability. PyVNT can handle YAML structured 
 Consider the following YAML data, mimicking an OpenFOAM blockMeshDict:
 
 ```
-FoamFile:
-	format: ascii
-	class: dictionary
-	object: blockMeshDict
+FoamFile:                            # Dictionary
+  format: "ascii"                    # key Entry
+  class: "dictionary"
+  object: "blockMeshDict"
 
-convertToMeters: 0.1
+convertToMeters: "0.1"               # key Entry
 
-vertices:
-	- [ 0 ,0 ,0 ]
-	- [ 1 ,0 ,0 ]
-	- [ 1 ,1 ,0 ]
-	- [ 0 ,1 ,0 ]
-	- [ 0 ,0 ,0.1 ]
-	- [ 1 ,0 ,0.1 ]
-	- [ 1 ,1 ,0.1 ]
-	- [ 0 ,1 ,0.1 ]
+vertices:                            # key list
+  - [ 0, 0, 0 ]
+  - [ 1, 0, 0 ]
+  - [ 1, 1, 0 ]
+  - [ 0, 1, 0 ]
+  - [ 0, 0, 0.1 ]
+  - [ 1, 0, 0.1 ]
+  - [ 1, 1, 0.1 ]
+  - [ 0, 1, 0.1 ]
+
+blocks:                            # key list
+  - hex
+  - [ 0, 1, 2, 3, 4, 5, 6, 7 ]
+  - [ 20, 20, 1 ]
+  - simpleGrading
+  - [ 1, 1, 1 ]
+
+edges:                             # key -> list (mixed custom structure)
+  - arc
+  - 0
+  - 1
+  - [ 0.5, 0.1, 0 ]
+  - spline
+  - 4
+  - 5
+  - [ [4.1, 4.2, 4.3], [4.5, 4.6, 4.7], [4.9, 5.0, 5.1] ]
+  - polyLine
+  - 6
+  - 7
+  - [ [6.1, 6.2, 6.3], [6.5, 6.6, 6.7] ]
+
+boundary:                          # List Node 
+  - movingWall:
+      type: "wall"
+      faces:
+        - [ 3, 7, 6, 2 ]
+
+  - fixedWalls:
+      type: "wall"
+      faces:
+        - [ 0, 4, 7, 3 ]
+        - [ 2, 6, 5, 1 ]
+        - [ 1, 5, 4, 0 ]
+
+  - frontAndBack:
+      type: "empty"
+      faces:
+        - [ 0, 3, 2, 1 ]
+        - [ 4, 5, 6, 7 ]
+
+mergePatchPairs:                   # key -> list 
+  - [ patch_0, patch_1 ]
+  - [ patch_2, patch_3 ]
 
 
-blocks:
-	- hex
-	- [ 0 ,1 ,2 ,3 ,4 ,5 ,6 ,7 ]
-	- [ 20 ,20 ,1 ]
-	- simpleGrading
-	- [ 1 ,1 ,1 ]
-
-
-edges:
-	- arc
-	- 0
-	- 1
-	- [ 0.5 ,0.1 ,0 ]
-
-	- spline
-	- 4
-	- 5
-	- [ (4.1, 4.2, 4.3) ,(4.5, 4.6, 4.7) ,(4.9, 5.0, 5.1) ]
-
-	- polyLine
-	- 6
-	- 7
-	- [ (6.1, 6.2, 6.3) ,(6.5, 6.6, 6.7) ]
-
-boundary:
-	- movingWall:
-		type: wall
-		faces:
-			- [ 3 ,7 ,6 ,2 ]
-
-	- fixedWalls:
-		type: wall
-		faces:
-			- [ 0 ,4 ,7 ,3 ]
-			- [ 2 ,6 ,5 ,1 ]
-			- [ 1 ,5 ,4 ,0 ]
-
-	- frontAndBack:
-		type: empty
-		faces:
-			- [ 0 ,3 ,2 ,1 ]
-			- [ 4 ,5 ,6 ,7 ]
-
-mergePatchPairs:
-	- [ cyclicPair1A ,cyclicPair1B ]
-	- [ anotherPatchA ,anotherPatchB ]
 ```
 ```py
 # parse_yaml_example.py
 from pyvnt import OpenFoamParser, Node_C, show_tree # Assuming these are top-level imports
 
 # Sample YAML content (can also be read from a file)
-yaml_content = """
-FoamFile:
-  format: ascii
-  class: dictionary
-  object: blockMeshDict
-convertToMeters: 0.1
-vertices:
-  - [0,0,0]
-  - [1,0,0]
-  - [1,1,0]
-  - [0,1,0]
-  - [0,0,0.1]
-  - [1,0,0.1]
-  - [1,1,0.1]
-  - [0,1,0.1]
-blocks:
-  - hex
-  - [0,1,2,3,4,5,6,7]
-  - [20,20,1]
-  - simpleGrading
-  - [1,1,1]
-edges:
-  - arc
-  - 0
-  - 1
-  - [ 0.5 ,0.1 ,0 ]
-  
-  - spline
-  - 4
-  - 5
-  - [ (4.1, 4.2, 4.3) ,(4.5, 4.6, 4.7) ,(4.9, 5.0, 5.1) ]
- 
-  - polyLine
-  - 6
-  - 7
-  - [ (6.1, 6.2, 6.3) ,(6.5, 6.6, 6.7) ]
-boundary:
-  - movingWall:
-      type: wall
-      faces:
-        - [3,7,6,2]
-  - fixedWalls:
-      type: wall
-      faces:
-        - [0,4,7,3]
-        - [2,6,5,1]
-        - [1,5,4,0]
-  - frontAndBack:
-      type: empty
-      faces:
-        - [0,3,2,1]
-        - [4,5,6,7]
-mergePatchPairs:
-  - [cyclicPair1A, cyclicPair1B]
-  - [anotherPatchA, anotherPatchB]
-"""
+yaml_content = """Yamle Example shown above"""
 
 # Initialize the parser
 parser = OpenFoamParser()
@@ -518,16 +461,16 @@ else:
 The show_tree(tree) command for the parsed YAML would produce a structure conceptually similar to this:
 
 ```
-blockMeshDict_from_yaml
+blockMeshDict
 { 
    convertToMeters : 0.1
    vertices : ((0, 0, 0), (1, 0, 0), (1, 1, 0), (0, 1, 0), (0, 0, 0.1), (1, 0, 0.1), (1, 1, 0.1), (0, 1, 0.1))
    blocks : ('hex', (0, 1, 2, 3, 4, 5, 6, 7), (20, 20, 1), 'simpleGrading', (1, 1, 1))
-   edges : ('arc', 0, 1, (0.5, 0.1, 0), 'spline', 4, 5, ('(4.1', 4.2, '4.3)', '(4.5', 4.6, '4.7)', '(4.9', 5.0, '5.1)'), 'polyLine', 6, 7, ('(6.1', 6.2, '6.3)', '(6.5', 6.6, '6.7)'))
-   mergePatchPairs : (('cyclicPair1A', 'cyclicPair1B'), ('anotherPatchA', 'anotherPatchB'))
+   edges : ('arc', 0, 1, (0.5, 0.1, 0), 'spline', 4, 5, ((4.1, 4.2, 4.3), (4.5, 4.6, 4.7), (4.9, 5.0, 5.1)), 'polyLine', 6, 7, ((6.1, 6.2, 6.3), (6.5, 6.6, 6.7)))        
+   mergePatchPairs : (('patch_0', 'patch_1'), ('patch_2', 'patch_3'))
 }
 ├── FoamFile
-│   { 
+│   {
 │      format : ascii
 │      class : dictionary
 │      object : blockMeshDict
@@ -550,9 +493,6 @@ blockMeshDict_from_yaml
         }
 ```
 
-
-
-        
 
 ### Parsing Traditional OpenFOAM Dictionary Files
 
@@ -605,7 +545,10 @@ This will create a master Node_C for the case, with child nodes for subdirectori
 Once a tree is parsed (or manually constructed), use the get_value(node: Node_C, *keys) method of the OpenFoamParser instance (or a similar standalone utility if available) to navigate and retrieve specific elements:
 
 ```py
+from pyvnt import *
+
 parser  =  OpenFoamParser()
+
 tree  =  parser.parse_file(path=r"\cavity\system\blockMeshDict")
 
 foam_file_node  =  parser.get_value(tree, "FoamFile")
