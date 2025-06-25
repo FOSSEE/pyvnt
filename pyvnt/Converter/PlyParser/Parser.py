@@ -518,8 +518,8 @@ class _OpenFoamParserInternalYaml:
             elements=[]
             for val in item:
                 elements.append(self.process_list_item(val))
-            if self.check_list(elements,(int,float),7):
-                dim_values = [e.get_value(e.name) for e in elements]
+            if self.check_list(elements,(Int_P,Flt_P),7):
+                dim_values = [e.give_val() for e in elements]
                 return Dim_Set_P("dim_set", dim_values)
             return List_CP("V", elems=[elements])
         elif isinstance(item, (str, float, int)):

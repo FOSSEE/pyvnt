@@ -225,7 +225,11 @@ def write_out_Yaml(obj, file, indent = 0, list_in_key = False,parent_list_node=F
             file.write(res)
     
     elif type(obj) == Int_P or type(obj) == Flt_P or type(obj) ==  Enm_P or type(obj) == Vector_P or type(obj) == Tensor_P : # If object is a property
-        file.write(f"{obj.give_val()}")
+        if isinstance(obj,Vector_P):
+            res=f"( {obj.x()} {obj.y()} {obj.z()} )"
+            file.write(res)
+        else:
+            file.write(f"{obj.give_val()}")
     
     elif type(obj) == Dim_Set_P: # special case for dimension set
         file.write(" ".join(i for i in str(obj.give_val()).split(",")))
